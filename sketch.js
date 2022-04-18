@@ -47,7 +47,7 @@ let c, pc = -1;
 let palette;
 let COLS;
 let rndN, R;
-let tokenData = genTokenData(633);
+let tokenData = genTokenData(248);
 let tkid = tokenData.tokenId;
 let seed = parseInt(tokenData.hash.slice(0, 16), 16)
 let hu = 1;
@@ -63,7 +63,7 @@ function setup() {
     img = createGraphics(sz, sz);
     let rndS = R.random_int(0, 3);
     let size = sz;
-    rndN = R.random_int(2, 10);
+    rndN = R.random_int(4, 10);
     mk = createGraphics(sz, sz);
 
     if (tkid % 2 == 0) {
@@ -82,7 +82,7 @@ function setup() {
     }
 
     let points = [];
-    for (let i = 0; i < 5000; i++) {
+    for (let i = 0; i < 6000; i++) {
         points.push(createVector(width / 2 + R.random_num(-size / 2, size / 2), height / 2 + R.random_num(-size / 2, size / 2)));
     }
 
@@ -98,6 +98,7 @@ function setup() {
     let rdnSu = R.random_int(0, 1);
     if (rdnSu == 1) shuffleArray(hulls);
     divRect(0, 0, width, height, rndN, rndN);
+    //drawingContext.shadowBlur = 200;
     //img = createGenImg();
 }
 
@@ -109,7 +110,6 @@ function draw() {
         strokeWeight(1);
         point(fp.x, fp.y);
     }
-   
     /*for (let hull of hulls) {
         if (hull.length > 1) {
             mk.beginShape();
@@ -119,7 +119,7 @@ function draw() {
             mk.endShape(CLOSE);
         }
     }*/
-
+    
     for (let th = 0; th < hulls.length; th++) {
         if (hulls[th].length > 1) {
             mk.beginShape();
@@ -225,7 +225,7 @@ function drawStar(cx, cy, w, h, cArr) {
     }
     img.endShape();
     img.pop();
-    console.log(cArr[R.random_int(0, floor(cArr.length / 2))] + ' ' + cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]);
+    //console.log(cArr[R.random_int(0, floor(cArr.length / 2))] + ' ' + cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]);
 }
 
 function genParcattern(cx, cy, w, h, cArr) {
