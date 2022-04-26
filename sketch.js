@@ -52,13 +52,15 @@ let tkid = tokenData.tokenId;
 let seed = parseInt(tokenData.hash.slice(0, 16), 16)
 let hu = 1;
 let fpoints = [];
+let strmove = false;
 let mk;
+let rdhow = 1;
 
 function setup() {
     
     //noLoop();
 	createCanvas(sz, sz);
-    frameRate(30);
+    frameRate(90);
     R = new Random(seed)
     img = createGraphics(sz, sz);
     let rndS = R.random_int(0, 3);
@@ -82,7 +84,7 @@ function setup() {
     }
 
     let points = [];
-    for (let i = 0; i < 6000; i++) {
+    for (let i = 0; i < 5000; i++) {
         points.push(createVector(width / 2 + R.random_num(-size / 2, size / 2), height / 2 + R.random_num(-size / 2, size / 2)));
     }
 
@@ -110,6 +112,10 @@ function draw() {
         strokeWeight(1);
         point(fp.x, fp.y);
     }
+
+    let rdhlx = 0;
+    let rdhly = 0;
+
     /*for (let hull of hulls) {
         if (hull.length > 1) {
             mk.beginShape();
@@ -119,18 +125,37 @@ function draw() {
             mk.endShape(CLOSE);
         }
     }*/
+
+    mk.clear();
     
     for (let th = 0; th < hulls.length; th++) {
-        if (hulls[th].length > 1) {
+        if (hulls[th].length > 0) {
             mk.beginShape();
             for (let p of hulls[th]) {
-                vertex(p.x, p.y);
+                if (strmove) {
+                    frameRate(15);
+                    if (frameCount % 30 == 0) rdhow = R.random_int(1, 4);
+                    if (p.x < sz / rdhow) {
+                        rdhlx = R.random_num(-5, 5);
+                        rdhly = R.random_num(-5, 5);
+                        //console.log('menor: ' + p.x + ' - ' + rdhlx);
+                    } else {
+                        //console.log('mayor: ' + p.x + ' - ' + rdhlx);
+                        rdhlx = 0;
+                        rdhly = 0;
+                    }
+                    vertex(p.x + rdhlx, p.y + rdhly);
+                } else {
+                    vertex(p.x, p.y);
+                }
             }
             mk.endShape(CLOSE);
             if (th == hu) { hu++; break; }
             //console.log(th + ' - ' + hu);
         }
     }
+
+    if (hu >= hulls.length) strmove = true;
 
     imgClone = img.get();
     imgClone.mask(mk.get());
@@ -143,7 +168,6 @@ function divRect(cox, coy, w, h, dxNum, dyNum)
 	const twoCellVolume = 0.35;
 	const xSpan = w / dxNum;
 	const ySpan = h / dyNum;
-	let nextBig = 0;
 	
 	let drawnFrag = [];
 	for(let yi = 0; yi < dyNum; yi++)
@@ -192,11 +216,11 @@ function divRect(cox, coy, w, h, dxNum, dyNum)
 	}
 }
 
-const UNITFUNCS = [stripe, triPattern, kiba, kuchibashi, recursiveRect, drawStar, genParcattern];
+const UNITFUNCS = [stripe, triPattern, kiba, kuchibashi, recursiveRect, drawStar, genParcattern, makePanel, flower];
 
 function drawUnit(cx, cy, w, h, cArr)
 {
-    const fn = int(R.random_dec() * UNITFUNCS.length);
+    const fn = R.random_int(0, UNITFUNCS.length - 1);//int(R.random_dec() * UNITFUNCS.length);
     UNITFUNCS[fn](cx, cy, w, h, cArr);
 	
 }
@@ -211,11 +235,13 @@ function shuffleArray(array) {
 function drawStar(cx, cy, w, h, cArr) {
     img.push();
     img.curveTightness(0);
-    img.strokeWeight(0);
-    img.fill(cArr[R.random_int(0, floor(cArr.length/2))]);
+    img.stroke(cArr[0]);
+    //img.fill(cArr[R.random_int(0, floor(cArr.length/2))]);
+    img.fill(cArr[0]);
     img.rect(cx, cy, w, h);
     let theta = random(TWO_PI);
     let pos = createVector(cx, cy)
+    img.noStroke();
     img.fill(cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length-1)]);
     img.beginShape();
     for (let i = 0; i < 8; i++) {
@@ -230,52 +256,49 @@ function drawStar(cx, cy, w, h, cArr) {
 
 function genParcattern(cx, cy, w, h, cArr) {
     circNum = R.random_int(4, 10);
-    blockSize = w; //~~random(30, 70);
-    //let img1 = createGraphics(w, h);
-    let bgClr = R.random_choice(cArr); //cArr[cArr.length - 1];
+    blockSize = w;
+    let bgClr = cArr[0];
+    img.stroke(bgClr);
     img.fill(bgClr);
     img.rect(cx, cy, w, h);
-    let isColorMode = true;
 
-    //img.strokeWeight(1.5);
     img.strokeCap(SQUARE);
-    //img.stroke(0, 200);
 
     for (var y = blockSize / 2; y < h + blockSize / 2; y += blockSize) {
         for (var x = blockSize / 2; x < w + blockSize / 2; x += blockSize) {
             img.push();
+            img.noStroke();
             img.translate(cx, cy);
             img.rotate(HALF_PI * Math.round(R.random_num(0, 4)));
 
             for (var i = circNum; i > 0; --i) {
                 var diam = blockSize * 2 * i / (circNum + 1);
-                if (i < 2 || !isColorMode) { img.fill(bgClr); } else { img.fill(cArr[separateIdx(i - 1, circNum + 1)]); }
+                if (i < 2) { img.fill(bgClr); } else { img.fill(cArr[separateIdx(i - 1, circNum + 1)]); }
                 img.arc(-blockSize / 2, -blockSize / 2, diam, diam, 0, HALF_PI);
             }
 
             for (var i = circNum; i > 0; --i) {
                 var diam = blockSize * 2 * i / (circNum + 1);
-                if (i < 2 || !isColorMode) { img.fill(bgClr); } else { img.fill(cArr[separateIdx(i - 1, circNum + 1)]); }
+                if (i < 2) { img.fill(bgClr); } else { img.fill(cArr[separateIdx(i - 1, circNum + 1)]); }
                 img.arc(-blockSize / 2 + blockSize, -blockSize / 2 + blockSize, diam, diam, PI, PI + HALF_PI);
             }
             img.pop();
         }
     }
-    //graphics.push({ obj: img1, x: cx, y: cy });
 }
 
 function separateIdx(idx, length) {
     return Math.floor(Math.abs(idx - (length - 1) / 2));
 }
 
-
 function recursiveRect(x, y, d, g, cArr) {
     //let img2 = createGraphics(d, g);
     img.push();
     //img.stroke(0, 0, 0, alpha);
     img.rectMode(CENTER);
-    //img.strokeWeight(2);
-    img.fill(R.random_choice(COLS));
+    img.stroke(cArr[0]);
+    //img.fill(R.random_choice(COLS));
+    img.fill(cArr[0]);
     img.rect(x, y, d, g);
     img.drawingContext.clip();
     circularGraphics(x, y, d, cArr);
@@ -296,7 +319,7 @@ function circularGraphics(cx, cy, rMax, cArr) {
     angleStepMin = min(c, d);
     angleStepMax = max(c, d);
     let rSep = R.random_int(3, 5);
-
+    img.stroke(cArr[0]);
     // randomSeed(0);
     img.push();
     img.translate(cx, cy);
@@ -314,13 +337,12 @@ function circularGraphics(cx, cy, rMax, cArr) {
         if (r < rMax / 2 * 0.8) img.drawingContext.shadowBlur = 0;
 
         img.push();
-        img.fill(R.random_choice(colors));
-        //img.strokeWeight(2);
-        //img.stroke(0, 0, 0, alpha);
+        img.fill(cArr[0]);
+        img.stroke(cArr[0]);
         img.rect(0, 0, r * 2);
 
         img.drawingContext.clip();
-        img.drawingContext.shadowBlur = angleWidth / 3;
+        //img.drawingContext.shadowBlur = angleWidth / 3;
 
         for (let angle = startAngle; angle < startAngle + 360; angle += angleStep) {
             let x = cos(angle) * (isFirstBigger ? r : r2);
@@ -330,8 +352,9 @@ function circularGraphics(cx, cy, rMax, cArr) {
                 img.translate(x, y);
                 img.rotate(angle - 90);
                 img.scale(e);
-                img.strokeWeight(1 / e);
-                img.stroke(0, 0, 0, alpha);
+                //img.strokeWeight(1 / e);
+                //img.stroke(0, 0, 0, alpha);
+                img.noStroke();
                 img.fill(R.random_choice(palette));
                 img.rect(0, 0, angleWidth, angleWidth);
                 img.pop();
@@ -351,8 +374,9 @@ function circularGraphics(cx, cy, rMax, cArr) {
                 img.translate(x, y);
                 img.rotate(angle - 90);
                 img.scale(e);
-                img.strokeWeight(1 / e);
-                img.stroke(0, 0, 0, alpha);
+                //img.strokeWeight(1 / e);
+                //img.stroke(0, 0, 0, alpha);
+                img.noStroke();
                 let c1 = pc;
                 while (c1 == pc) {
                     c1 = R.random_choice(colors);
@@ -373,12 +397,12 @@ function circularGraphics(cx, cy, rMax, cArr) {
 function triPattern(cx, cy, w, h, cArr)
 {
     //let img4 = createGraphics(w, h);
-    const span = w / 5;
-    img.noStroke();
+    img.stroke(cArr[0]);
     img.rectMode(CENTER);
     img.push();
     img.translate(cx, cy);
-    img.fill(R.random_choice(cArr));
+    //img.fill(R.random_choice(cArr));
+    img.fill(cArr[0]);
     img.rect(0, 0, w, h);
     img.push();
     img.drawingContext.clip();
@@ -398,19 +422,72 @@ function triPattern(cx, cy, w, h, cArr)
 	
     img.pop();
     img.pop();
-    //graphics.push(img4);
-    //graphics.push({ obj: img4, x: cx, y: cy });
+}
+
+
+function flower(x, y, w, h, cArr) {
+    img.push();
+    let c1 = cArr[R.random_int(1, floor(cArr.length / 2))];
+    let c2 = cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)];
+    img.fill(cArr[0]);
+    img.rect(x, y, w, h);
+    img.translate(x, y);
+    //img.rotate(a);
+    let num = R.random_int(10, 16);
+    img.fill(c1);
+    for (let i = 0; i < num; i++) {
+        img.rotate(TAU / num);
+        img.ellipse(w * 0.32, 0, w * 0.35, (w / num) * 1.8);
+    }
+    img.fill(c2);
+    img.circle(0, 0, w * 0.4);
+    img.pop();
+}
+
+function makePanel(x, y, w, h, cArr) {
+    img.push();
+    img.noStroke();
+    img.translate(x, y);
+    img.fill(cArr[0]);
+    img.rect(0, 0, w, h);
+    let d = sqrt(sq(w) + sq(h)) * 0.5;
+    let n1 = R.random_int(4, 8);
+    let thetaStep = TAU / n1;
+    let theta0 = R.random_num(0, TAU);
+    let rot = R.random_num(-1, 1) * 0.04;
+    let thetaCut = random([1 / 3, 1 / 2, 2 / 3]);
+    let thetaFlip = 10;
+    let col1 = cArr[R.random_int(0, floor(cArr.length / 2))];
+    let col2 = cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]
+        //img.fill(cArr[1]);
+        while (d > 0) {
+            for (let theta = theta0; theta < theta0 + TAU; theta += thetaStep) {
+                if (tkid % 2 == 0) {col1 = cArr[R.random_int(0, floor(cArr.length / 2))]; col2 = cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]}
+                img.fill(col1);
+                img.arc(0, 0, d, d, theta, theta + thetaStep * thetaCut);
+                //img.erase();
+                img.fill(col2);
+                img.arc(0, 0, d, d, theta + thetaStep * thetaCut, theta + thetaStep);
+                img.noErase();
+            }
+            d -= 0.5;
+            theta0 += rot;
+            if (d % thetaFlip == 0) rot *= -1;
+        }
+    img.pop()
 }
 
 function stripe(cx, cy, w, h, cArr)
 {
     //let img5 = createGraphics(w, h);
 	const span = w / 5;
-    img.noStroke();
+    img.stroke(cArr[0]);
+    //img.strokeWeight(0);
     img.rectMode(CENTER);
     img.push();
     img.translate(cx, cy);
-    img.fill(R.random_choice(cArr));
+    //img.fill(R.random_choice(cArr));
+    img.fill(cArr[0]);
     img.rect(0, 0, w, h);
     img.push();
     img.drawingContext.clip();
@@ -419,7 +496,8 @@ function stripe(cx, cy, w, h, cArr)
     const xSpan = w / R.random_int(2, 4);
     const ySpan = h / R.random_num(2, 3);
 	const yOff = xSpan * 0.5;
-	let c = 0;
+    let c = 0;
+    img.noStroke();
 	for(let y = h; y > -h; y -= ySpan)
 	{
 		const cOff = c % 2 == 0 ? 0 : 1;
@@ -441,10 +519,10 @@ function stripe(cx, cy, w, h, cArr)
 
 function kiba(cx, cy, w, h, cArr)
 {
-    //let img6 = createGraphics(w, h);
     const span = w / R.random_int(3, 5);
 	const kibaH = h * 0.4;
-    img.noStroke();
+    //img.noStroke();
+    img.stroke(cArr[0]);
     img.rectMode(CENTER);
     img.push();
     img.translate(cx, cy);
@@ -453,19 +531,17 @@ function kiba(cx, cy, w, h, cArr)
     img.rect(0, 0, w, h);
     img.drawingContext.clip();
     img.fill(cArr[1]);
+    img.noStroke();
 	for(let x = -w / 2; x < w /2; x += span)
 	{
         img.triangle(x + span / 2, -kibaH * 0.5, x, h / 2, x + span, h / 2 );
 	}
 
     img.pop();
-    //graphics.push(img6);
-    //graphics.push({ obj: img6, x: cx, y: cy });
 }
 
 function kuchibashi(cx, cy, w, h, cArr)
 {
-    //let img7 = createGraphics(w, h);
     img.noStroke();
     img.rectMode(CENTER);
     img.push();
@@ -485,8 +561,6 @@ function kuchibashi(cx, cy, w, h, cArr)
 		eye(- w, 0, w, h, cArr);
 	}
     img.pop();
-    //graphics.push(img7);
-    //graphics.push({ obj: img7, x: cx, y: cy });
 }
 
 function eye(cx, cy, w, h, cArr) {
@@ -496,7 +570,8 @@ function eye(cx, cy, w, h, cArr) {
     img.push();
     img.translate(cx, cy);
     //rotate(int(random(4)) * PI);
-    img.fill(R.random_choice(cArr));
+    //img.fill(R.random_choice(cArr));
+    img.fill(cArr[0]);
     img.rect(0, 0, w, h);
     img.fill(255);
     const offset = (min(w, h) - s) * R.random_num(0.1, 0.4) * 0;
