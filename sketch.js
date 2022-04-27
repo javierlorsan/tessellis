@@ -54,7 +54,8 @@ let hu = 1;
 let fpoints = [];
 let strmove = false;
 let mk;
-let rdhow = 1;
+let rdhow = sz;
+let rddir;
 
 function setup() {
     
@@ -65,8 +66,9 @@ function setup() {
     img = createGraphics(sz, sz);
     let rndS = R.random_int(0, 3);
     let size = sz;
-    rndN = R.random_int(4, 10);
+    rndN = R.random_int(6, 10);
     mk = createGraphics(sz, sz);
+    rddir = R.random_int(0, 2);
 
     if (tkid % 2 == 0) {
         COLS = paleta[int(random(0, paleta.length))];
@@ -113,18 +115,7 @@ function draw() {
         point(fp.x, fp.y);
     }
 
-    let rdhlx = 0;
-    let rdhly = 0;
-
-    /*for (let hull of hulls) {
-        if (hull.length > 1) {
-            mk.beginShape();
-            for (let p of hull) {
-                vertex(p.x, p.y);
-            }
-            mk.endShape(CLOSE);
-        }
-    }*/
+    let rdhl = 0;
 
     mk.clear();
     
@@ -133,25 +124,30 @@ function draw() {
             mk.beginShape();
             for (let p of hulls[th]) {
                 if (strmove) {
-                    frameRate(15);
-                    if (frameCount % 30 == 0) rdhow = R.random_int(1, 4);
-                    if (p.x < sz / rdhow) {
-                        rdhlx = R.random_num(-5, 5);
-                        rdhly = R.random_num(-5, 5);
-                        //console.log('menor: ' + p.x + ' - ' + rdhlx);
+                    frameRate(50);
+                    if (frameCount % 2 == 0) rdhow = sz - frameCount * 0.5;
+                    if (p.x > rdhow) {
+                        rdhl = getNoiseVal(p.x, p.y, lerp(p.x, p.y, 0.5));
                     } else {
-                        //console.log('mayor: ' + p.x + ' - ' + rdhlx);
-                        rdhlx = 0;
-                        rdhly = 0;
+                        rdhl = 0;
                     }
-                    vertex(p.x + rdhlx, p.y + rdhly);
+                    switch (rddir) {
+                        case 0:
+                            vertex(p.x + rdhl, p.y + rdhl);
+                            break;
+                        case 1:
+                            vertex(p.x, p.y + rdhl);
+                            break;
+                        case 2:
+                            vertex(p.x + rdhl, p.y);
+                            break;
+                    }
                 } else {
                     vertex(p.x, p.y);
                 }
             }
             mk.endShape(CLOSE);
             if (th == hu) { hu++; break; }
-            //console.log(th + ' - ' + hu);
         }
     }
 
@@ -161,6 +157,12 @@ function draw() {
     imgClone.mask(mk.get());
 
     image(imgClone, 0, 0);
+}
+
+function getNoiseVal(x, y, k) {
+    const ns = 0.005;
+    const no = frameCount / 100;
+    return (noise(x * ns + no, y * ns + no) - 0.5) * k;
 }
 
 function divRect(cox, coy, w, h, dxNum, dyNum)
@@ -292,12 +294,9 @@ function separateIdx(idx, length) {
 }
 
 function recursiveRect(x, y, d, g, cArr) {
-    //let img2 = createGraphics(d, g);
     img.push();
-    //img.stroke(0, 0, 0, alpha);
     img.rectMode(CENTER);
     img.stroke(cArr[0]);
-    //img.fill(R.random_choice(COLS));
     img.fill(cArr[0]);
     img.rect(x, y, d, g);
     img.drawingContext.clip();
@@ -462,7 +461,7 @@ function makePanel(x, y, w, h, cArr) {
         //img.fill(cArr[1]);
         while (d > 0) {
             for (let theta = theta0; theta < theta0 + TAU; theta += thetaStep) {
-                if (tkid % 2 == 0) {col1 = cArr[R.random_int(0, floor(cArr.length / 2))]; col2 = cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]}
+                //if (tkid % 2 == 0) {col1 = cArr[R.random_int(0, floor(cArr.length / 2))]; col2 = cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]}
                 img.fill(col1);
                 img.arc(0, 0, d, d, theta, theta + thetaStep * thetaCut);
                 //img.erase();
