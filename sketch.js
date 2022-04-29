@@ -69,6 +69,7 @@ function setup() {
     rndN = R.random_int(6, 10);
     mk = createGraphics(sz, sz);
     rddir = R.random_int(0, 2);
+    pixelDensity(1);
 
     if (tkid % 2 == 0) {
         COLS = paleta[int(random(0, paleta.length))];
@@ -140,14 +141,6 @@ function draw() {
                             vertex(p.x + rdhl, p.y);
                             break;
                     }
-                /*} else if (!strmove || stopmov) {
-                    console.log('hola');
-                    if (dist(p.x, p.y, mouseX, mouseY) <= 100) {
-                        rdhl = getNoiseVal(p.x, p.y, lerp(p.x, p.y, 0.5));
-                        vertex(p.x - rdhl, p.y - rdhl);
-                    } else {
-                        vertex(p.x, p.y);
-                    }*/
                 } else {
                     vertex(p.x, p.y);
                 }
