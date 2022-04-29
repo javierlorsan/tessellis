@@ -8,7 +8,6 @@ Press "c" to continue motion</br>
 Press "0" for diagonal motion</br>
 Press "1" for vertical motion</br>
 Press "2" for horizontal motion</br>
-
-click on the pieces to split them
+Click on the pieces to split them
 
 Enjoy!!
