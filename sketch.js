@@ -53,6 +53,7 @@ let seed = parseInt(tokenData.hash.slice(0, 16), 16)
 let hu = 1;
 let fpoints = [];
 let strmove = false;
+let stopmov = false;
 let mk;
 let rdhow = sz;
 let rddir;
@@ -61,7 +62,6 @@ function setup() {
     
     //noLoop();
 	createCanvas(sz, sz);
-    frameRate(90);
     R = new Random(seed)
     img = createGraphics(sz, sz);
     let rndS = R.random_int(0, 3);
@@ -102,8 +102,6 @@ function setup() {
     let rdnSu = R.random_int(0, 1);
     if (rdnSu == 1) shuffleArray(hulls);
     divRect(0, 0, width, height, rndN, rndN);
-    //drawingContext.shadowBlur = 200;
-    //img = createGenImg();
 }
 
 function draw() {   
@@ -120,12 +118,12 @@ function draw() {
     mk.clear();
     
     for (let th = 0; th < hulls.length; th++) {
-        if (hulls[th].length > 0) {
+        if (hulls[th].length > 3) {
             mk.beginShape();
             for (let p of hulls[th]) {
-                if (strmove) {
-                    frameRate(50);
-                    if (frameCount % 2 == 0) rdhow = sz - frameCount * 0.5;
+                if (strmove && !stopmov) {
+                    frameRate(60);
+                    if (frameCount % 2 == 0) rdhow = sz - frameCount;
                     if (p.x > rdhow) {
                         rdhl = getNoiseVal(p.x, p.y, lerp(p.x, p.y, 0.5));
                     } else {
@@ -142,21 +140,46 @@ function draw() {
                             vertex(p.x + rdhl, p.y);
                             break;
                     }
+                /*} else if (!strmove || stopmov) {
+                    console.log('hola');
+                    if (dist(p.x, p.y, mouseX, mouseY) <= 100) {
+                        rdhl = getNoiseVal(p.x, p.y, lerp(p.x, p.y, 0.5));
+                        vertex(p.x - rdhl, p.y - rdhl);
+                    } else {
+                        vertex(p.x, p.y);
+                    }*/
                 } else {
                     vertex(p.x, p.y);
                 }
             }
             mk.endShape(CLOSE);
-            if (th == hu) { hu++; break; }
+            if (th == hu) { hu++;  }
         }
     }
-
-    if (hu >= hulls.length) strmove = true;
+    if (frameCount > 5) strmove = true;
 
     imgClone = img.get();
     imgClone.mask(mk.get());
 
     image(imgClone, 0, 0);
+}
+
+function keyPressed() {
+    if (key == ' ') {
+        stopmov=true;
+    }
+    if (key == 'c') {
+        stopmov = false;
+    }
+    if (key == '0') {
+        rddir = 0;
+    }
+    if (key == '1') {
+        rddir = 1;
+    }
+    if (key == '2') {
+        rddir = 2;
+    }
 }
 
 function getNoiseVal(x, y, k) {
@@ -581,6 +604,10 @@ function eye(cx, cy, w, h, cArr) {
     img.fill(0);
     img.circle(0, 0, s * 0.5);
     img.pop();
+}
+
+function mouseReleased() {
+    createblocks(mouseX, mouseY);
 }
 
 function createblocks(x, y) {
