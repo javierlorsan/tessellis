@@ -234,7 +234,7 @@ function divRect(cox, coy, w, h, dxNum, dyNum)
 	}
 }
 
-const UNITFUNCS = [stripe, triPattern, kiba, kuchibashi, recursiveRect, drawStar, genParcattern, makePanel, flower];
+const UNITFUNCS = [stripe, kiba, kuchibashi, recursiveRect, drawStar, genParcattern, makePanel, flower, rko];
 
 function drawUnit(cx, cy, w, h, cArr)
 {
@@ -250,31 +250,78 @@ function shuffleArray(array) {
     }
 }
 
+function rko(cx, cy, w, h, cArr) {
+
+    img.push();
+    img.stroke(cArr[0]);
+    img.translate(cx, cy);
+    img.fill(cArr[0]);
+    img.rect(0, 0, w, h);
+    if (h=w) img.rotate(PI/ R.random_int(1,2));
+    let c1 = cArr[R.random_int(1, floor(cArr.length / 2))];
+    let sg = min(h,w) / 20;
+    let xn = R.random_num(-sg / 2, sg / 2);
+    let yn = R.random_num(-sg, sg);
+    let lr = min(h, w) / 10;
+    let sw = 0;
+    let seed = R.random_dec(); // random([0.01, 0.1]);
+    let g = min(h, w);
+
+    img.noFill();
+
+    img.translate(-g / 2, -g / 2);
+    //img.noFill();
+
+    img.strokeWeight(lr * 2);
+    for (let ly = 0; ly <= g; ly += lr) {
+        if (sw % 2 == 0) {
+            img.stroke(c1);
+        } else {
+            img.stroke(cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]);
+        }
+
+        img.beginShape();
+        for (let lx = sg / 2; lx <= w - sg / 2; lx += sg) {
+            let adx = map(noise(lx, xn), 0, 1, -sg / 2, sg / 2);
+            let ady = map(noise(lx, yn), 0, 1, -sg, sg);
+            xn += seed;
+            yn += seed;
+            img.curveVertex(lx + adx, ly + ady);
+        }
+        img.endShape();
+        sw++;
+    }
+    //img.pop();
+    img.pop();
+    img.stroke(cArr[0]);
+}
+
 function drawStar(cx, cy, w, h, cArr) {
     img.push();
-    img.curveTightness(0);
     img.stroke(cArr[0]);
-    //img.fill(cArr[R.random_int(0, floor(cArr.length/2))]);
     img.fill(cArr[0]);
     img.rect(cx, cy, w, h);
+    img.push();
+    img.curveTightness(0);
     let theta = random(TWO_PI);
     let pos = createVector(cx, cy)
     img.noStroke();
     img.fill(cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length-1)]);
     img.beginShape();
     for (let i = 0; i < 8; i++) {
-        let v = p5.Vector.fromAngle(theta, h/2).add(pos);
+        let v = p5.Vector.fromAngle(theta, min(w,h)/2).add(pos);
         curveVertex(v.x, v.y);
         theta += 2 * TWO_PI / 5;
     }
     img.endShape();
+    img.pop();
     img.pop();
     //console.log(cArr[R.random_int(0, floor(cArr.length / 2))] + ' ' + cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]);
 }
 
 function genParcattern(cx, cy, w, h, cArr) {
     circNum = R.random_int(4, 10);
-    blockSize = w;
+    blockSize = min(w,h);
     let bgClr = cArr[0];
     img.stroke(bgClr);
     img.fill(bgClr);
@@ -416,7 +463,6 @@ function triPattern(cx, cy, w, h, cArr)
     img.rectMode(CENTER);
     img.push();
     img.translate(cx, cy);
-    //img.fill(R.random_choice(cArr));
     img.fill(cArr[0]);
     img.rect(0, 0, w, h);
     img.push();
@@ -442,20 +488,22 @@ function triPattern(cx, cy, w, h, cArr)
 
 function flower(x, y, w, h, cArr) {
     img.push();
-    let c1 = cArr[R.random_int(1, floor(cArr.length / 2))];
-    let c2 = cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)];
     img.fill(cArr[0]);
     img.rect(x, y, w, h);
+    img.pop();
+    img.push();
     img.translate(x, y);
     //img.rotate(a);
     let num = R.random_int(10, 16);
+    let c1 = cArr[R.random_int(1, floor(cArr.length / 2))];
+    let c2 = cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)];
     img.fill(c1);
     for (let i = 0; i < num; i++) {
         img.rotate(TAU / num);
-        img.ellipse(w * 0.32, 0, w * 0.35, (w / num) * 1.8);
+        img.ellipse(w * 0.32, 0, w * 0.35, (min(w,h) / num) * 1.8);
     }
     img.fill(c2);
-    img.circle(0, 0, w * 0.4);
+    img.circle(0, 0, min(w,h) * 0.4);
     img.pop();
 }
 
@@ -528,8 +576,6 @@ function stripe(cx, cy, w, h, cArr)
 	
     img.pop();
     img.pop();
-    //graphics.push(img5);
-    //graphics.push({ obj: img5, x: cx, y: cy });
 }
 
 function kiba(cx, cy, w, h, cArr)
@@ -557,7 +603,7 @@ function kiba(cx, cy, w, h, cArr)
 
 function kuchibashi(cx, cy, w, h, cArr)
 {
-    img.noStroke();
+    img.stroke(cArr[0]);
     img.rectMode(CENTER);
     img.push();
 	
@@ -566,6 +612,7 @@ function kuchibashi(cx, cy, w, h, cArr)
     img.fill(cArr[0]);
     img.rect(0, 0, w, h);
     img.fill(cArr[1]);
+    img.noStroke();
     img.triangle(-w / 2, -h / 2, w / 2, 0, -w / 2, 0);
 	
     img.fill(cArr[2]);
