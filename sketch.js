@@ -32,18 +32,14 @@ let colors31 = ["#10AC4B", "#E2BCB1", "#53A408", "#B2C12B", "#EBDEA3", "#20C282"
 let colors32 = ["#222124", "#E7C02C", "#20C282", "#EBDEA3", "#4C3033", "#B2C12B", "#E2B07F", "#0B682D", "#54A243", "#274FAA"];
 let colors33 = ["#A6B996", "#4C3033", "#E7C02C", "#0B682D", "#20C282", "#506431", "#F6F4F2", "#8F7791", "#B2C12B", "#EBDEA3"];
 let paleta = [colors1, colors2, colors3, colors4, colors5, colors6, colors7, colors8, colors9, colors10, colors11, colors12, colors13, colors14, colors15, colors16, colors17, colors18, colors19, colors20, colors21, colors22, colors23, colors24, colors25, colors26, colors27, colors28, colors29, colors30, colors31, colors32, colors33];
-const CYCLE = 150;
+let colores = [["#ffcdb2", "#ffb4a2", "#e5989b", "#b5838d", "#6d6875"], ["#ef476f", "#ffd166", "#06d6a0", "#118ab2", "#073b4c"], ["#007f5f", "#2b9348", "#55a630", "#80b918", "#aacc00", "#bfd200", "#d4d700", "#dddf00", "#eeef20", "#ffff3f"], ["#54478c", "#2c699a", "#048ba8", "#0db39e", "#16db93", "#83e377", "#b9e769", "#efea5a", "#f1c453", "#f29e4c"].reverse()];
+let lncolors = ["#fefae0", "#edf6f9", "#e9f5db", "#1b4332", "#003459", "#5e503f"]
 let clusters = [];
 let hulls = [];
-let graphics = [];
-let grxy = [];
 let img;
 let WIDTH = window.innerWidth;
 let HEIGHT = window.innerHeight;
 let sz = Math.min(WIDTH, HEIGHT);
-let angleSepMin, angleSepMax, angleStepMin, angleStepM;
-let alpha = 100;
-let c, pc = -1;
 let palette;
 let COLS;
 let rndN, R;
@@ -57,22 +53,29 @@ let stopmov = false;
 let mk;
 let rdhow = sz;
 let rddir;
+let arridx = '';
+let margin = 30, u = 20;
+let idCount = 0;
+let arcs = [];
+let cline;
 
 function setup() {
     
-    //noLoop();
 	createCanvas(sz, sz);
     R = new Random(seed)
     img = createGraphics(sz, sz);
     let rndS = R.random_int(0, 3);
     let size = sz;
-    rndN = R.random_int(6, 10);
+    rndN = R.random_int(2, 4);
     mk = createGraphics(sz, sz);
     rddir = R.random_int(0, 2);
     pixelDensity(1);
 
+    //cline = color(R.random_choice(paleta)[R.random_int(0, 9)]);
+    
     if (tkid % 2 == 0) {
-        COLS = paleta[int(random(0, paleta.length))];
+        COLS = paleta[R.random_int(0, paleta.length - 1)];
+        arridx = R.random_int(0, 2);
     } else {
         let colArr = [];
         for (t = 0; t < 10; t++) {
@@ -81,6 +84,8 @@ function setup() {
         COLS = colArr
     }
     palette = COLS;
+
+    cline = color(R.random_choice(lncolors))
 
     for (let i = 0; i < width * height * 5 / 100; i = i + 1) {
         fpoints.push({ x: R.random_num(0, width), y: R.random_num(0, height) });
@@ -93,16 +98,80 @@ function setup() {
 
     clusters = divide(points);
     hulls = [convexHull(clusters[0]), convexHull(clusters[1])];
-    let s = 30;
-    if (rndS == 0) { s = 40; } else if (rndS == 1) { s = 50; }
+    let s = 40;
+    if (rndS == 0) { s = 50; } else if (rndS == 1) { s = 60; }
+    console.log(s);
     for (let x = s / 2; x < width - s / 2; x += s) {
         for (let y = s / 2; y < height - s / 2; y += s) {
             createblocks(x, y);
         }
     }
-    //let rdnSu = R.random_int(0, 1);
-    //if (rdnSu == 1) shuffleArray(hulls);
-    divRect(0, 0, width, height, rndN, rndN);
+    
+    makeTl();
+    initarcos();
+    writeArcs();
+}
+
+function initarcos() {
+
+    let divPossibilities = [1];
+    while (divPossibilities.length == 1) {
+        for (let d of [2, 3, 4, 6]) {
+            if (random() < 1 / 2) divPossibilities.push(d);
+        }
+    }
+
+    let y = margin, s=0;
+    while (y < sz - margin) {
+        s = random(divPossibilities) * u;
+        for (let x = margin; x < sz - margin - 0.1; x += s) {
+            makeTile(x, y, s);
+        }
+        y += s;
+    }
+    
+    for (let x = margin; x < sz - margin - u / 2; x += 2 * u) {
+        addArc(x + u, margin, u, PI, PI * 2);
+        addArc(x + u, sz - margin, u, 0, PI);
+    }
+    for (let y = margin; y < sz - margin - u / 2; y += 2 * u) {
+        addArc(margin, y + u, u, PI / 2, (3 * PI) / 2);
+        addArc(sz - margin, y + u, u, (3 * PI) / 2, (5 * PI) / 2);
+    }
+
+}
+
+function makeTl() {
+
+    img.noiseSeed(floor(R.random_num(0, 10e6)));
+    img.noStroke();
+
+    const minSize = 5
+    const maxSize = minSize + 5;
+    const noiseScale = 9e-11;
+    const n = R.random_int(5, 20);
+
+    for (let i = 0; i < 10000; i++) { //noprotect
+        let size;
+        if (i > 6000) {
+            size = random(minSize, maxSize);
+        } else {
+            size = map((i / 6000) ** 0.8, 0, 1, 200, minSize);
+        }
+
+        let x = R.random_num(0, width);
+        let y =  R.random_num(0, height);
+
+        if (floor(x / width * n * 2) % 2 == 0) {
+            img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[1]));
+        } else {
+            img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), palette));
+        }
+
+        const a = 0;
+        img.circle(x + random(-a, a), y + random(-a, a), size);
+    }
+
 }
 
 function draw() {   
@@ -114,7 +183,7 @@ function draw() {
         point(fp.x, fp.y);
     }
 
-    let rdhl = 0;
+    let rdhl = 0
 
     mk.clear();
     
@@ -157,6 +226,113 @@ function draw() {
     image(imgClone, 0, 0);
 }
 
+function lerpColorScheme(n, colors) {
+    let i = n * (colors.length) % (colors.length);
+    let color1 = color(colors[floor(i)])
+    let color2 = color(colors[(floor(i) + 1) % colors.length])
+    return lerpColor(color1, color2, i % 1)
+}
+
+function curlNoise(x, y, z) {
+    const eps = 0.0000001;
+    let n1, n2, a, b;
+    x = x / eps;
+    y = y / eps;
+    n1 = noise(x, y + eps, z);
+    n2 = noise(x, y - eps, z);
+    a = (n1 - n2) / (2 * eps);
+
+    n1 = noise(x + eps, y, z);
+    n2 = noise(x - eps, y, z);
+
+    b = (n1 - n2) / (2 * eps);
+
+    let angle = createVector(a, -b).heading();
+    if (angle < 0) angle += TAU;
+    return angle / TAU;
+
+}
+
+function makeTile(x, y, s) {
+    let dMin = s == u ? 0 : s == 2 * u ? 1 : s == 3 * u ? 2 : s == 4 * u ? 2 : 3;
+    let dMax = s == u ? 1 : s == 2 * u ? 2 : s == 3 * u ? 3 : s == 4 * u ? 4 : 8;
+    let d1 = floor(random(dMin, dMax + 1));
+    let d2 = (2 * s) / u - d1 - 1;
+    for (let i = 1; i <= d1; i++) {
+        addArc(x, y, i * u, 0, PI / 2);
+        addArc(x + s, y + s, i * u, PI, (3 * PI) / 2);
+    }
+    for (let i = 1; i <= d2; i++) {
+        addArc(x + s, y, i * u, PI / 2, PI);
+        addArc(x, y + s, i * u, (3 * PI) / 2, 2 * PI);
+    }
+}
+
+function addArc(x, y, d, theta1, theta2) {
+    let eps = 1;
+    let id = -1;
+    let x1 = x + (d / 2) * cos(theta1);
+    let y1 = y + (d / 2) * sin(theta1);
+    let x2 = x + (d / 2) * cos(theta2);
+    let y2 = y + (d / 2) * sin(theta2);
+    let matches = [];
+    for (let a of arcs) {
+        let a_x1 = a.x + (a.d / 2) * cos(a.theta1);
+        let a_y1 = a.y + (a.d / 2) * sin(a.theta1);
+        let a_x2 = a.x + (a.d / 2) * cos(a.theta2);
+        let a_y2 = a.y + (a.d / 2) * sin(a.theta2);
+        if (
+            (abs(x1 - a_x1) < eps && abs(y1 - a_y1) < eps) ||
+            (abs(x1 - a_x2) < eps && abs(y1 - a_y2) < eps) ||
+            (abs(x2 - a_x1) < eps && abs(y2 - a_y1) < eps) ||
+            (abs(x2 - a_x2) < eps && abs(y2 - a_y2) < eps)
+        ) {
+            matches.push(a.id);
+        }
+    }
+    if (matches.length > 0) {
+        id = matches[0];
+        if (matches.length == 2) {
+            for (let a of arcs) {
+                if (a.id == matches[1]) a.id = matches[0];
+            }
+        }
+    } else {
+        id = idCount++;
+    }
+    arcs.push({
+        x: x,
+        y: y,
+        d: d,
+        theta1: theta1,
+        theta2: theta2,
+        id: id,
+    });
+}
+
+function writeArcs() {
+
+    //img.blendMode(MULTIPLY);
+    img.strokeWeight(10);
+    cline.setAlpha(170);
+    img.stroke(cline);
+    img.noFill();
+    let idCount = new Array(arcs.length).fill(0);
+    //img.stroke("#f5f5f5");
+    for (let a of arcs) {
+        //img.arc(a.x, a.y, a.d, a.d, a.theta1, a.theta2);
+        idCount[a.id]++;
+    }
+
+    id = idCount.indexOf(max([...idCount]));
+    
+    
+    for (let a of arcs) {
+        if (a.id == id) img.arc(a.x, a.y, a.d, a.d, a.theta1, a.theta2);
+    }
+
+}
+
 function keyPressed() {
     if (key == ' ') {
         stopmov=true;
@@ -181,449 +357,6 @@ function getNoiseVal(x, y, k) {
     return (noise(x * ns + no, y * ns + no) - 0.5) * k;
 }
 
-function divRect(cox, coy, w, h, dxNum, dyNum)
-{
-	const twoCellVolume = 0.35;
-	const xSpan = w / dxNum;
-	const ySpan = h / dyNum;
-	
-	let drawnFrag = [];
-	for(let yi = 0; yi < dyNum; yi++)
-	{
-		drawnFrag[yi] = [];
-		for(let xi = 0; xi < dxNum; xi++)
-		{
-			drawnFrag[yi][xi] = false;
-		}
-	}
-	
-	for(let yi = 0; yi < dyNum; yi++)
-	for(let xi = 0; xi < dxNum; xi++)
-	{
-		let cx = cox + (xi + 0.5) * xSpan;
-		let cy = coy + (yi + 0.5) * ySpan;
-		let uw = xSpan;
-		let uh = ySpan;
-		
-		if(drawnFrag[yi][xi] == true)continue;
-		
-        if (R.random_dec() < twoCellVolume  && xi != dxNum - 1  && yi != dyNum - 1)
-		{
-			let isHori;
-			if(xi == dxNum - 1)isHori = false;
-			else if(yi == dyNum - 1)isHori = true;
-			else if(drawnFrag[yi][xi + 1] == true)isHori = false;
-            else if (R.random_dec() > 0.5) isHori = false;
-			else isHori = true;
-			if(isHori)
-			{
-				cx += xSpan* 0.5;
-				uw *= 2;
-				drawnFrag[yi][xi + 1] = true;
-			}else
-			{
-				cy += ySpan* 0.5;
-				uh *= 2;
-				drawnFrag[yi + 1][xi] = true;
-			}
-		}
-		
-		const c = COLS;
-		drawUnit(cx, cy, uw, uh, c);
-		drawnFrag[yi][xi] = true;
-	}
-}
-
-const UNITFUNCS = [stripe, kiba, kuchibashi, recursiveRect, drawStar, genParcattern, makePanel, flower, rko];
-
-function drawUnit(cx, cy, w, h, cArr)
-{
-    const fn = R.random_int(0, UNITFUNCS.length - 1);//int(R.random_dec() * UNITFUNCS.length);
-    UNITFUNCS[fn](cx, cy, w, h, cArr);
-	
-}
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-}
-
-function rko(cx, cy, w, h, cArr) {
-
-    img.push();
-    img.stroke(cArr[0]);
-    img.translate(cx, cy);
-    img.fill(cArr[0]);
-    img.rect(0, 0, w, h);
-    if (h=w) img.rotate(PI/ R.random_int(1,2));
-    let c1 = cArr[R.random_int(1, floor(cArr.length / 2))];
-    let sg = min(h,w) / 20;
-    let xn = R.random_num(-sg / 2, sg / 2);
-    let yn = R.random_num(-sg, sg);
-    let lr = min(h, w) / 10;
-    let sw = 0;
-    let seed = R.random_dec(); // random([0.01, 0.1]);
-    let g = min(h, w);
-
-    img.noFill();
-
-    img.translate(-g / 2, -g / 2);
-    //img.noFill();
-
-    img.strokeWeight(lr * 2);
-    for (let ly = 0; ly <= g; ly += lr) {
-        if (sw % 2 == 0) {
-            img.stroke(c1);
-        } else {
-            img.stroke(cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]);
-        }
-
-        img.beginShape();
-        for (let lx = sg / 2; lx <= w - sg / 2; lx += sg) {
-            let adx = map(noise(lx, xn), 0, 1, -sg / 2, sg / 2);
-            let ady = map(noise(lx, yn), 0, 1, -sg, sg);
-            xn += seed;
-            yn += seed;
-            img.curveVertex(lx + adx, ly + ady);
-        }
-        img.endShape();
-        sw++;
-    }
-    //img.pop();
-    img.pop();
-    img.stroke(cArr[0]);
-}
-
-function drawStar(cx, cy, w, h, cArr) {
-    img.push();
-    img.stroke(cArr[0]);
-    img.fill(cArr[0]);
-    img.rect(cx, cy, w, h);
-    img.push();
-    img.curveTightness(0);
-    let theta = random(TWO_PI);
-    let pos = createVector(cx, cy)
-    img.noStroke();
-    img.fill(cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length-1)]);
-    img.beginShape();
-    for (let i = 0; i < 8; i++) {
-        let v = p5.Vector.fromAngle(theta, min(w,h)/2).add(pos);
-        curveVertex(v.x, v.y);
-        theta += 2 * TWO_PI / 5;
-    }
-    img.endShape();
-    img.pop();
-    img.pop();
-    //console.log(cArr[R.random_int(0, floor(cArr.length / 2))] + ' ' + cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]);
-}
-
-function genParcattern(cx, cy, w, h, cArr) {
-    circNum = R.random_int(4, 10);
-    blockSize = min(w,h);
-    let bgClr = cArr[0];
-    img.stroke(bgClr);
-    img.fill(bgClr);
-    img.rect(cx, cy, w, h);
-
-    img.strokeCap(SQUARE);
-
-    for (var y = blockSize / 2; y < h + blockSize / 2; y += blockSize) {
-        for (var x = blockSize / 2; x < w + blockSize / 2; x += blockSize) {
-            img.push();
-            img.noStroke();
-            img.translate(cx, cy);
-            img.rotate(HALF_PI * Math.round(R.random_num(0, 4)));
-
-            for (var i = circNum; i > 0; --i) {
-                var diam = blockSize * 2 * i / (circNum + 1);
-                if (i < 2) { img.fill(bgClr); } else { img.fill(cArr[separateIdx(i - 1, circNum + 1)]); }
-                img.arc(-blockSize / 2, -blockSize / 2, diam, diam, 0, HALF_PI);
-            }
-
-            for (var i = circNum; i > 0; --i) {
-                var diam = blockSize * 2 * i / (circNum + 1);
-                if (i < 2) { img.fill(bgClr); } else { img.fill(cArr[separateIdx(i - 1, circNum + 1)]); }
-                img.arc(-blockSize / 2 + blockSize, -blockSize / 2 + blockSize, diam, diam, PI, PI + HALF_PI);
-            }
-            img.pop();
-        }
-    }
-}
-
-function separateIdx(idx, length) {
-    return Math.floor(Math.abs(idx - (length - 1) / 2));
-}
-
-function recursiveRect(x, y, d, g, cArr) {
-    img.push();
-    img.rectMode(CENTER);
-    img.stroke(cArr[0]);
-    img.fill(cArr[0]);
-    img.rect(x, y, d, g);
-    img.drawingContext.clip();
-    circularGraphics(x, y, d, cArr);
-    img.pop();
-}
-
-function circularGraphics(cx, cy, rMax, cArr) {
-    let colors = cArr;
-
-    let a = R.random_int(1, 5);
-    let b = R.random_int(1, 5);
-    let c = R.random_int(1, 5);
-    let d = R.random_int(1, 5);
-
-    angleSepMin = min(a, b);
-    angleSepMax = max(a, b);
-
-    angleStepMin = min(c, d);
-    angleStepMax = max(c, d);
-    let rSep = R.random_int(3, 5);
-    img.stroke(cArr[0]);
-    // randomSeed(0);
-    img.push();
-    img.translate(cx, cy);
-    for (let r = rMax / 2; r > 0; r -= rMax / rSep) {
-        let r2 = r - rMax / 10;
-        let isFirstBigger = R.random_dec() > 0.5;
-        let startAngle = 0; //random(360);
-        let angleNum = R.random_int(angleSepMin, angleSepMax) * R.random_int(angleStepMin, angleStepMax);
-        let angleWidth = (2 * PI * (isFirstBigger ? r : r2)) / angleNum;
-        let angleStep = 360 / angleNum;
-        let f = R.random_int(2, 5);
-        img.drawingContext.shadowColor = color(0, 0, 0, 10);
-        img.drawingContext.shadowBlur = width / 20;
-        angleWidth / 3;
-        if (r < rMax / 2 * 0.8) img.drawingContext.shadowBlur = 0;
-
-        img.push();
-        img.fill(cArr[0]);
-        img.stroke(cArr[0]);
-        img.rect(0, 0, r * 2);
-
-        img.drawingContext.clip();
-        //img.drawingContext.shadowBlur = angleWidth / 3;
-
-        for (let angle = startAngle; angle < startAngle + 360; angle += angleStep) {
-            let x = cos(angle) * (isFirstBigger ? r : r2);
-            let y = sin(angle) * (isFirstBigger ? r : r2);
-            for (let e = 1; e > 0; e -= 1 / f) {
-                img.push();
-                img.translate(x, y);
-                img.rotate(angle - 90);
-                img.scale(e);
-                //img.strokeWeight(1 / e);
-                //img.stroke(0, 0, 0, alpha);
-                img.noStroke();
-                img.fill(R.random_choice(palette));
-                img.rect(0, 0, angleWidth, angleWidth);
-                img.pop();
-            }
-        }
-
-        startAngle = R.random_num(0, 360);
-        angleNum = R.random_int(angleSepMin, angleSepMax) * R.random_int(angleStepMin, angleStepMax);
-        angleWidth = (2 * PI * (isFirstBigger ? r2 : r)) / angleNum;
-        angleStep = 360 / angleNum;
-        f = R.random_int(2, 5);
-        for (let angle = startAngle; angle < startAngle + 360; angle += angleStep) {
-            let x = cos(angle) * (isFirstBigger ? r2 : r);
-            let y = sin(angle) * (isFirstBigger ? r2 : r);
-            for (let e = 1; e > 0; e -= 1 / f) {
-                img.push();
-                img.translate(x, y);
-                img.rotate(angle - 90);
-                img.scale(e);
-                //img.strokeWeight(1 / e);
-                //img.stroke(0, 0, 0, alpha);
-                img.noStroke();
-                let c1 = pc;
-                while (c1 == pc) {
-                    c1 = R.random_choice(colors);
-                }
-                img.fill(c1);
-                pc = c1;
-                img.rect(0, 0, angleWidth, angleWidth);
-                img.pop();
-            }
-        }
-        img.pop();
-    }
-    img.pop();
-    //graphics.push(img2)
-    //graphics.push({ obj: img2, x: cx, y: cy });
-}
-
-function triPattern(cx, cy, w, h, cArr)
-{
-    //let img4 = createGraphics(w, h);
-    img.stroke(cArr[0]);
-    img.rectMode(CENTER);
-    img.push();
-    img.translate(cx, cy);
-    img.fill(cArr[0]);
-    img.rect(0, 0, w, h);
-    img.push();
-    img.drawingContext.clip();
-    const xSpan = w / R.random_int(2, 4);
-    const ySpan = h / R.random_int(2, 4);
-	let c = 0;
-	for(let y = -h / 2; y < h / 2; y += ySpan)
-	{
-		const xOff = c % 2 == 0 ? 0 : xSpan / 2 * 0;
-		for(let x = -w / 2; x < w / 2; x += xSpan)
-		{
-            img.fill(R.random_choice(cArr));
-            img.triangle(x + xOff, y, x + xSpan + xOff , y, x + xSpan / 2 + xOff , y + ySpan);
-		}
-		c++;
-	}
-	
-    img.pop();
-    img.pop();
-}
-
-
-function flower(x, y, w, h, cArr) {
-    img.push();
-    img.fill(cArr[0]);
-    img.rect(x, y, w, h);
-    img.pop();
-    img.push();
-    img.translate(x, y);
-    //img.rotate(a);
-    let num = R.random_int(10, 16);
-    let c1 = cArr[R.random_int(1, floor(cArr.length / 2))];
-    let c2 = cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)];
-    img.fill(c1);
-    for (let i = 0; i < num; i++) {
-        img.rotate(TAU / num);
-        img.ellipse(w * 0.32, 0, w * 0.35, (min(w,h) / num) * 1.8);
-    }
-    img.fill(c2);
-    img.circle(0, 0, min(w,h) * 0.4);
-    img.pop();
-}
-
-function makePanel(x, y, w, h, cArr) {
-    img.push();
-    img.noStroke();
-    img.translate(x, y);
-    img.fill(cArr[0]);
-    img.rect(0, 0, w, h);
-    let d = sqrt(sq(w) + sq(h)) * 0.5;
-    let n1 = R.random_int(4, 8);
-    let thetaStep = TAU / n1;
-    let theta0 = R.random_num(0, TAU);
-    let rot = R.random_num(-1, 1) * 0.04;
-    let thetaCut = random([1 / 3, 1 / 2, 2 / 3]);
-    let thetaFlip = 10;
-    let col1 = cArr[R.random_int(0, floor(cArr.length / 2))];
-    let col2 = cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]
-        //img.fill(cArr[1]);
-        while (d > 0) {
-            for (let theta = theta0; theta < theta0 + TAU; theta += thetaStep) {
-                //if (tkid % 2 == 0) {col1 = cArr[R.random_int(0, floor(cArr.length / 2))]; col2 = cArr[R.random_int(floor(cArr.length / 2) + 1, cArr.length - 1)]}
-                img.fill(col1);
-                img.arc(0, 0, d, d, theta, theta + thetaStep * thetaCut);
-                //img.erase();
-                img.fill(col2);
-                img.arc(0, 0, d, d, theta + thetaStep * thetaCut, theta + thetaStep);
-                img.noErase();
-            }
-            d -= 0.5;
-            theta0 += rot;
-            if (d % thetaFlip == 0) rot *= -1;
-        }
-    img.pop()
-}
-
-function stripe(cx, cy, w, h, cArr)
-{
-    //let img5 = createGraphics(w, h);
-	const span = w / 5;
-    img.stroke(cArr[0]);
-    //img.strokeWeight(0);
-    img.rectMode(CENTER);
-    img.push();
-    img.translate(cx, cy);
-    //img.fill(R.random_choice(cArr));
-    img.fill(cArr[0]);
-    img.rect(0, 0, w, h);
-    img.push();
-    img.drawingContext.clip();
-	//rotate(int(random(4)) * PI);
-	
-    const xSpan = w / R.random_int(2, 4);
-    const ySpan = h / R.random_num(2, 3);
-	const yOff = xSpan * 0.5;
-    let c = 0;
-    img.noStroke();
-	for(let y = h; y > -h; y -= ySpan)
-	{
-		const cOff = c % 2 == 0 ? 0 : 1;
-		for(let x = -w; x < w; x += xSpan)
-		{
-            img.fill(cArr[1 + cOff]);
-            img.quad(x - xSpan / 2, y - ySpan / 2, x - xSpan / 2 , y + ySpan / 2, x , y + ySpan / 2 + yOff, x , y - ySpan / 2 );
-            img.fill(cArr[2 + cOff]);
-            img.quad(x + xSpan / 2 , y - ySpan / 2, x + xSpan / 2 , y + ySpan / 2, x , y + ySpan / 2 + yOff, x , y - ySpan / 2);
-		}
-		c++;
-	}
-	
-    img.pop();
-    img.pop();
-}
-
-function kiba(cx, cy, w, h, cArr)
-{
-    const span = w / R.random_int(3, 5);
-	const kibaH = h * 0.4;
-    //img.noStroke();
-    img.stroke(cArr[0]);
-    img.rectMode(CENTER);
-    img.push();
-    img.translate(cx, cy);
-    img.rotate(R.random_int(0, 2) * PI);
-    img.fill(cArr[0]);
-    img.rect(0, 0, w, h);
-    img.drawingContext.clip();
-    img.fill(cArr[1]);
-    img.noStroke();
-	for(let x = -w / 2; x < w /2; x += span)
-	{
-        img.triangle(x + span / 2, -kibaH * 0.5, x, h / 2, x + span, h / 2 );
-	}
-
-    img.pop();
-}
-
-function kuchibashi(cx, cy, w, h, cArr)
-{
-    img.stroke(cArr[0]);
-    img.rectMode(CENTER);
-    img.push();
-	
-    img.translate(cx, cy);
-    img.rotate(R.random_int(0, 2) * PI);
-    img.fill(cArr[0]);
-    img.rect(0, 0, w, h);
-    img.fill(cArr[1]);
-    img.noStroke();
-    img.triangle(-w / 2, -h / 2, w / 2, 0, -w / 2, 0);
-	
-    img.fill(cArr[2]);
-    img.triangle(-w / 2, h / 2, w / 2, 0, -w / 2, 0);
-	
-    if (w == h && R.random_dec() > 0.5)
-	{
-		eye(- w, 0, w, h, cArr);
-	}
-    img.pop();
-}
 
 function eye(cx, cy, w, h, cArr) {
     const s = min(w, h) * R.random_num(0.4, 0.7);
