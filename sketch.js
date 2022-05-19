@@ -54,7 +54,7 @@ let mk;
 let rdhow = sz;
 let rddir;
 let arridx = '';
-let margin = 30, u = 20;
+let margin = 100, u = 20;
 let idCount = 0;
 let arcs = [];
 let cline;
@@ -78,10 +78,12 @@ function setup() {
         arridx = R.random_int(0, 2);
     } else {
         let colArr = [];
-        for (t = 0; t < 10; t++) {
+        let rdt = R.random_int(2, 10);
+        for (t = 0; t < rdt; t++) {
             colArr.push(R.random_choice(paleta)[R.random_int(0, 9)]);
         }
         COLS = colArr
+        console.log(colArr.length);
     }
     palette = COLS;
 
@@ -100,7 +102,6 @@ function setup() {
     hulls = [convexHull(clusters[0]), convexHull(clusters[1])];
     let s = 40;
     if (rndS == 0) { s = 50; } else if (rndS == 1) { s = 60; }
-    console.log(s);
     for (let x = s / 2; x < width - s / 2; x += s) {
         for (let y = s / 2; y < height - s / 2; y += s) {
             createblocks(x, y);
@@ -110,6 +111,7 @@ function setup() {
     makeTl();
     initarcos();
     writeArcs();
+    //eye(width - sz / 2, height - sz / 2, sz * 0.5, sz * 0.5, palette);
 }
 
 function initarcos() {
@@ -117,13 +119,13 @@ function initarcos() {
     let divPossibilities = [1];
     while (divPossibilities.length == 1) {
         for (let d of [2, 3, 4, 6]) {
-            if (random() < 1 / 2) divPossibilities.push(d);
+            if (R.random_dec() < 1 / 2) divPossibilities.push(d);
         }
     }
 
     let y = margin, s=0;
     while (y < sz - margin) {
-        s = random(divPossibilities) * u;
+        s = R.random_choice(divPossibilities) * u;
         for (let x = margin; x < sz - margin - 0.1; x += s) {
             makeTile(x, y, s);
         }
@@ -144,32 +146,62 @@ function initarcos() {
 function makeTl() {
 
     img.noiseSeed(floor(R.random_num(0, 10e6)));
-    img.noStroke();
 
-    const minSize = 5
+    const minSize = 3;
     const maxSize = minSize + 5;
     const noiseScale = 9e-11;
     const n = R.random_int(5, 20);
+    const alph = R.random_int(55, 255);
+    const tp = R.random_int(0, 5);
+    const strk = R.random_dec();
+    //let cols = R.random_choice(colores);
+
+    if ((tp == 0 || tp == 5) && strk > 0.5) img.noStroke();
 
     for (let i = 0; i < 10000; i++) { //noprotect
         let size;
         if (i > 6000) {
-            size = random(minSize, maxSize);
+            size = R.random_num(minSize, maxSize);
         } else {
             size = map((i / 6000) ** 0.8, 0, 1, 200, minSize);
         }
 
         let x = R.random_num(0, width);
-        let y =  R.random_num(0, height);
+        let y = R.random_num(0, height);
+
+        img.strokeWeight(size);
 
         if (floor(x / width * n * 2) % 2 == 0) {
-            img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[1]));
+            if ((tp == 0 || tp == 5) && strk > 0.5) {
+                img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[1], alph));
+            } else {
+                img.stroke((lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[1], alph)));
+            }
         } else {
-            img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), palette));
+            if ((tp == 0 || tp == 5) && strk >= 0.5) { img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), palette, alph)); }
+            else { img.stroke((lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), palette, alph))) }
         }
-
         const a = 0;
-        img.circle(x + random(-a, a), y + random(-a, a), size);
+        switch (tp) {
+            case 0:
+                img.circle(x + R.random_num(-a, a), y + R.random_num(-a, a), size);
+                break;
+            case 1:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a), y + R.random_num(-a, a) + size)
+                break;
+            case 2:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a))
+                break;
+            case 3:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size)
+                break;
+            case 4:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size)
+                break;
+            case 5:
+                img.rect(x + R.random_num(-a, a), y + R.random_num(-a, a), size, size);
+                break;
+        }
     }
 
 }
@@ -213,6 +245,7 @@ function draw() {
                 } else {
                     vertex(p.x, p.y);
                 }
+                console.log(hulls[th].x)
             }
             mk.endShape(CLOSE);
             if (th == hu) { hu++;  }
@@ -226,11 +259,13 @@ function draw() {
     image(imgClone, 0, 0);
 }
 
-function lerpColorScheme(n, colors) {
+function lerpColorScheme(n, colors, alph) {
     let i = n * (colors.length) % (colors.length);
-    let color1 = color(colors[floor(i)])
-    let color2 = color(colors[(floor(i) + 1) % colors.length])
-    return lerpColor(color1, color2, i % 1)
+    let color1 = color(colors[floor(i)]);
+    let color2 = color(colors[(floor(i) + 1) % colors.length]);
+    color1.setAlpha(alph);
+    color2.setAlpha(alph);
+    return lerpColor(color1, color2, i % 1);
 }
 
 function curlNoise(x, y, z) {
@@ -256,7 +291,7 @@ function curlNoise(x, y, z) {
 function makeTile(x, y, s) {
     let dMin = s == u ? 0 : s == 2 * u ? 1 : s == 3 * u ? 2 : s == 4 * u ? 2 : 3;
     let dMax = s == u ? 1 : s == 2 * u ? 2 : s == 3 * u ? 3 : s == 4 * u ? 4 : 8;
-    let d1 = floor(random(dMin, dMax + 1));
+    let d1 = floor(R.random_num(dMin, dMax + 1));
     let d2 = (2 * s) / u - d1 - 1;
     for (let i = 1; i <= d1; i++) {
         addArc(x, y, i * u, 0, PI / 2);
@@ -318,7 +353,6 @@ function writeArcs() {
     img.stroke(cline);
     img.noFill();
     let idCount = new Array(arcs.length).fill(0);
-    //img.stroke("#f5f5f5");
     for (let a of arcs) {
         //img.arc(a.x, a.y, a.d, a.d, a.theta1, a.theta2);
         idCount[a.id]++;
@@ -328,7 +362,9 @@ function writeArcs() {
     
     
     for (let a of arcs) {
-        if (a.id == id) img.arc(a.x, a.y, a.d, a.d, a.theta1, a.theta2);
+        if (a.id == id) {
+            img.arc(a.x, a.y, a.d, a.d, a.theta1, a.theta2);
+        }
     }
 
 }
@@ -355,28 +391,6 @@ function getNoiseVal(x, y, k) {
     const ns = 0.005;
     const no = frameCount / 100;
     return (noise(x * ns + no, y * ns + no) - 0.5) * k;
-}
-
-
-function eye(cx, cy, w, h, cArr) {
-    const s = min(w, h) * R.random_num(0.4, 0.7);
-    img.noStroke();
-    img.rectMode(CENTER);
-    img.push();
-    img.translate(cx, cy);
-    //rotate(int(random(4)) * PI);
-    //img.fill(R.random_choice(cArr));
-    img.fill(cArr[0]);
-    img.rect(0, 0, w, h);
-    img.fill(255);
-    const offset = (min(w, h) - s) * R.random_num(0.1, 0.4) * 0;
-    img.translate(offset, offset);
-    img.circle(0, 0, s);
-    img.fill(R.random_choice(cArr));
-    img.circle(0, 0, s * 0.75);
-    img.fill(0);
-    img.circle(0, 0, s * 0.5);
-    img.pop();
 }
 
 function mouseReleased() {
@@ -423,7 +437,6 @@ function divide(points) {
         clusters.push([]);
     }
 
-    // assign clusters
     for (let p of points) {
         let argmin = 0;
         let minDist = distSquared(p, centroids[0]);
@@ -446,19 +459,23 @@ function convexHull(points) {
     let i = 0;
     let endPoint;
     let pointOnHull = points[0];
-    do {
-        hull.push(pointOnHull);
-        endPoint = points[0];
-        for (let j = 0; j < points.length; j++) {
-            let p = p5.Vector.sub(endPoint, pointOnHull);
-            let q = p5.Vector.sub(points[j], pointOnHull);
-            if (endPoint.equals(pointOnHull) || (p.cross(q)).z < 0) {
-                endPoint = points[j];
+    try {
+        do {
+            hull.push(pointOnHull);
+            endPoint = points[0];
+            for (let j = 0; j < points.length; j++) {
+                let p = p5.Vector.sub(endPoint, pointOnHull);
+                let q = p5.Vector.sub(points[j], pointOnHull);
+                if (endPoint.equals(pointOnHull) || (p.cross(q)).z < 0) {
+                    endPoint = points[j];
+                }
             }
-        }
-        i++;
-        pointOnHull = endPoint;
-    } while (!endPoint.equals(points[0]));
+            i++;
+            pointOnHull = endPoint;
+        } while (!endPoint.equals(points[0]));
+    } catch (err) {
+        setup();
+    }
     return hull;
 }
 
