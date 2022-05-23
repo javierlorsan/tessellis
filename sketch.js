@@ -151,7 +151,7 @@ function makeTl() {
 
     img.noiseSeed(floor(R.random_num(0, 10e6)));
 
-    const minSize = 3;
+    const minSize = R.random_int(1,5);
     const maxSize = minSize + 5;
     const noiseScale = 9e-11;
     const n = R.random_int(5, 20);
@@ -170,8 +170,8 @@ function makeTl() {
             size = map((i / 6000) ** 0.8, 0, 1, 200, minSize);
         }
 
-        let x = R.random_num(0, width);
-        let y = R.random_num(0, height);
+        let x = R.random_num(0, sz);
+        let y = R.random_num(0, sz);
 
         img.strokeWeight(size);
 
@@ -355,12 +355,12 @@ function addArc(x, y, d, theta1, theta2) {
 function writeArcs() {
 
     //img.blendMode(MULTIPLY);
-    let x = 1;
+    //img.blendMode(OVERLAY)
+    //let x = 1;
     //let t = 1;
     img.strokeWeight(10);
     cline1.setAlpha(170);
     cline2.setAlpha(170);
-    //img.stroke(cline1);
     img.noFill();
     let idCount = new Array(arcs.length).fill(0);
     for (let a of arcs) {
