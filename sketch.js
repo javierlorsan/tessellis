@@ -33,7 +33,8 @@ let colors32 = ["#222124", "#E7C02C", "#20C282", "#EBDEA3", "#4C3033", "#B2C12B"
 let colors33 = ["#A6B996", "#4C3033", "#E7C02C", "#0B682D", "#20C282", "#506431", "#F6F4F2", "#8F7791", "#B2C12B", "#EBDEA3"];
 let paleta = [colors1, colors2, colors3, colors4, colors5, colors6, colors7, colors8, colors9, colors10, colors11, colors12, colors13, colors14, colors15, colors16, colors17, colors18, colors19, colors20, colors21, colors22, colors23, colors24, colors25, colors26, colors27, colors28, colors29, colors30, colors31, colors32, colors33];
 let colores = [["#ffcdb2", "#ffb4a2", "#e5989b", "#b5838d", "#6d6875"], ["#ef476f", "#ffd166", "#06d6a0", "#118ab2", "#073b4c"], ["#007f5f", "#2b9348", "#55a630", "#80b918", "#aacc00", "#bfd200", "#d4d700", "#dddf00", "#eeef20", "#ffff3f"], ["#54478c", "#2c699a", "#048ba8", "#0db39e", "#16db93", "#83e377", "#b9e769", "#efea5a", "#f1c453", "#f29e4c"].reverse()];
-let lncolors = ["#fefae0", "#edf6f9", "#e9f5db", "#1b4332", "#003459", "#5e503f"]
+let lncolors1 = ["#fefae0", "#edf6f9", "#e9f5db"];
+let lncolors2 = ["#1b4332", "#003459", "#5e503f"];
 let clusters = [];
 let hulls = [];
 let img;
@@ -54,10 +55,11 @@ let mk;
 let rdhow = sz;
 let rddir;
 let arridx = '';
-let margin = 100, u = 20;
+let margin = 30, u = 20;
 let idCount = 0;
 let arcs = [];
-let cline;
+let cline1;
+let cline2;
 
 function setup() {
     
@@ -87,7 +89,8 @@ function setup() {
     }
     palette = COLS;
 
-    cline = color(R.random_choice(lncolors))
+    cline1 = color(R.random_choice(lncolors1))
+    cline2 = color(R.random_choice(lncolors2))
 
     for (let i = 0; i < width * height * 5 / 100; i = i + 1) {
         fpoints.push({ x: R.random_num(0, width), y: R.random_num(0, height) });
@@ -99,6 +102,7 @@ function setup() {
     }
 
     clusters = divide(points);
+    console.log(clusters[0].length + ' - ' + clusters[1].length);
     hulls = [convexHull(clusters[0]), convexHull(clusters[1])];
     let s = 40;
     if (rndS == 0) { s = 50; } else if (rndS == 1) { s = 60; }
@@ -152,7 +156,7 @@ function makeTl() {
     const noiseScale = 9e-11;
     const n = R.random_int(5, 20);
     const alph = R.random_int(55, 255);
-    const tp = R.random_int(0, 5);
+    const tp = R.random_int(0, 6);
     const strk = R.random_dec();
     //let cols = R.random_choice(colores);
 
@@ -201,6 +205,10 @@ function makeTl() {
             case 5:
                 img.rect(x + R.random_num(-a, a), y + R.random_num(-a, a), size, size);
                 break;
+            case 6:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size)
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size)
+                break;
         }
     }
 
@@ -245,7 +253,6 @@ function draw() {
                 } else {
                     vertex(p.x, p.y);
                 }
-                console.log(hulls[th].x)
             }
             mk.endShape(CLOSE);
             if (th == hu) { hu++;  }
@@ -348,21 +355,26 @@ function addArc(x, y, d, theta1, theta2) {
 function writeArcs() {
 
     //img.blendMode(MULTIPLY);
+    let x = 1;
+    //let t = 1;
     img.strokeWeight(10);
-    cline.setAlpha(170);
-    img.stroke(cline);
+    cline1.setAlpha(170);
+    cline2.setAlpha(170);
+    //img.stroke(cline1);
     img.noFill();
     let idCount = new Array(arcs.length).fill(0);
     for (let a of arcs) {
-        //img.arc(a.x, a.y, a.d, a.d, a.theta1, a.theta2);
+        // img.arc(a.x, a.y, a.d, a.d, a.theta1, a.theta2);
         idCount[a.id]++;
+        //t++;
     }
 
     id = idCount.indexOf(max([...idCount]));
     
-    
     for (let a of arcs) {
         if (a.id == id) {
+            const [r, g, b] = img.get(a.x, a.y);
+            if (r <= 155 && b <= 155 && g <= 155) { img.stroke(cline1); } else { img.stroke(cline2); }
             img.arc(a.x, a.y, a.d, a.d, a.theta1, a.theta2);
         }
     }
@@ -457,9 +469,9 @@ function convexHull(points) {
     points.sort((p, q) => p.x - q.x);
     let hull = [];
     let i = 0;
-    let endPoint;
+    let endPoint = 0;
     let pointOnHull = points[0];
-    try {
+    //try {
         do {
             hull.push(pointOnHull);
             endPoint = points[0];
@@ -472,10 +484,11 @@ function convexHull(points) {
             }
             i++;
             pointOnHull = endPoint;
-        } while (!endPoint.equals(points[0]));
-    } catch (err) {
-        setup();
-    }
+        } while (typeof endPoint !== 'undefined' && !endPoint.equals(points[0]));
+    //} catch (err) {
+    //    alert(err.toString());
+        //window.location.reload();
+    //}
     return hull;
 }
 
