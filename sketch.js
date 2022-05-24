@@ -156,11 +156,13 @@ function makeTl() {
     const noiseScale = 9e-11;
     const n = R.random_int(5, 20);
     const alph = R.random_int(55, 255);
-    const tp = R.random_int(0, 6);
+    const tp = R.random_int(0, 7);
     const strk = R.random_dec();
+    const rdln1 = R.random_int(0, 7);
+    const rdpoly = R.random_int(5, 6);
     //let cols = R.random_choice(colores);
 
-    if ((tp == 0 || tp == 5) && strk > 0.5) img.noStroke();
+    if ((tp < 2) && strk > 0.5) img.noStroke();
 
     for (let i = 0; i < 10000; i++) { //noprotect
         let size;
@@ -176,14 +178,20 @@ function makeTl() {
         img.strokeWeight(size);
 
         if (floor(x / width * n * 2) % 2 == 0) {
-            if ((tp == 0 || tp == 5) && strk > 0.5) {
+            if ((tp < 3) && strk > 0.5) {
                 img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[1], alph));
+                if (tp == 2) img.strokeWeight(1);
             } else {
                 img.stroke((lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[1], alph)));
             }
         } else {
-            if ((tp == 0 || tp == 5) && strk >= 0.5) { img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), palette, alph)); }
-            else { img.stroke((lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), palette, alph))) }
+            if ((tp < 3) && strk >= 0.5) {
+                img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), palette, alph));
+            }
+            else {
+                img.stroke((lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), palette, alph)))
+                if (rdln1 == 1 && tp > 2) img.strokeWeight(1);
+            }
         }
         const a = 0;
         switch (tp) {
@@ -191,27 +199,41 @@ function makeTl() {
                 img.circle(x + R.random_num(-a, a), y + R.random_num(-a, a), size);
                 break;
             case 1:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a), y + R.random_num(-a, a) + size)
-                break;
-            case 2:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a))
-                break;
-            case 3:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size)
-                break;
-            case 4:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size)
-                break;
-            case 5:
                 img.rect(x + R.random_num(-a, a), y + R.random_num(-a, a), size, size);
                 break;
+            case 2:
+                poly(x, y, size, rdpoly)
+                break;
+            case 3:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a), y + R.random_num(-a, a) + size)
+                break;
+            case 4:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a))
+                break;
+            case 5:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size)
+                break;
             case 6:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size)
+                break;
+            case 7:
                 img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size)
                 img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size)
                 break;
         }
     }
 
+}
+
+function poly(x, y, radius, npoints) {
+    let angle = TWO_PI / npoints;
+    img.beginShape();
+    for (let a = 0; a < TWO_PI; a += angle) {
+        let sx = x + cos(a) * radius;
+        let sy = y + sin(a) * radius;
+        vertex(sx, sy);
+    }
+    img.endShape(CLOSE);
 }
 
 function draw() {   
