@@ -32,7 +32,7 @@ let colors31 = ["#10AC4B", "#E2BCB1", "#53A408", "#B2C12B", "#EBDEA3", "#20C282"
 let colors32 = ["#222124", "#E7C02C", "#20C282", "#EBDEA3", "#4C3033", "#B2C12B", "#E2B07F", "#0B682D", "#54A243", "#274FAA"];
 let colors33 = ["#A6B996", "#4C3033", "#E7C02C", "#0B682D", "#20C282", "#506431", "#F6F4F2", "#8F7791", "#B2C12B", "#EBDEA3"];
 let paleta = [colors1, colors2, colors3, colors4, colors5, colors6, colors7, colors8, colors9, colors10, colors11, colors12, colors13, colors14, colors15, colors16, colors17, colors18, colors19, colors20, colors21, colors22, colors23, colors24, colors25, colors26, colors27, colors28, colors29, colors30, colors31, colors32, colors33];
-let colores = [["#ffcdb2", "#ffb4a2", "#e5989b", "#b5838d", "#6d6875"], ["#ef476f", "#ffd166", "#06d6a0", "#118ab2", "#073b4c"], ["#007f5f", "#2b9348", "#55a630", "#80b918", "#aacc00", "#bfd200", "#d4d700", "#dddf00", "#eeef20", "#ffff3f"], ["#54478c", "#2c699a", "#048ba8", "#0db39e", "#16db93", "#83e377", "#b9e769", "#efea5a", "#f1c453", "#f29e4c"].reverse()];
+let colores = [["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"],["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"], ["#FA053F", "#FEB200", "#03FDBC", "#04BEFB", "#06617F"], ["#ef476f", "#ffd166", "#06d6a0", "#118ab2", "#073b4c"], ["#007f5f", "#2b9348", "#55a630", "#80b918", "#aacc00", "#bfd200", "#d4d700", "#dddf00", "#eeef20", "#ffff3f"], ["#54478c", "#2c699a", "#048ba8", "#0db39e", "#16db93", "#83e377", "#b9e769", "#efea5a", "#f1c453", "#f29e4c"].reverse()];
 let lncolors1 = ["#fefae0", "#edf6f9", "#e9f5db"];
 let lncolors2 = ["#1b4332", "#003459", "#5e503f"];
 let clusters = [];
@@ -117,7 +117,6 @@ function setup() {
     makeTl();
     initarcos();
     writeArcs();
-    //eye(width - sz / 2, height - sz / 2, sz * 0.5, sz * 0.5, palette);
 }
 
 function initarcos() {
@@ -157,16 +156,16 @@ function makeTl() {
     const maxSize = minSize + 5;
     const noiseScale = 9e-11;
     const n = R.random_int(5, 20);
-    const alph = R.random_int(55, 255);
-    const tp = R.random_int(0, 9);
+    const alph = R.random_int(75, 255);
+    const tp = R.random_int(0, 10);
     const strk = R.random_dec();
     const rdln1 = R.random_int(0, 7);
     const rdpoly = R.random_int(5, 6);
-    //let cols = R.random_choice(colores);
+    const rdlrpal = R.random_int(0, colores.length-1)
 
     if ((tp < 2) && strk > 0.5) img.noStroke();
 
-    for (let i = 0; i < 10000; i++) { //noprotect
+    for (let i = 0; i < 10000; i++) {
         let size;
         if (i > 6000) {
             size = R.random_num(minSize, maxSize);
@@ -181,10 +180,10 @@ function makeTl() {
 
         if (floor(x / width * n * 2) % 2 == 0) {
             if ((tp < 3) && strk > 0.5) {
-                img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[1], alph));
+                img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[rdlrpal], alph));
                 if (tp == 2) img.strokeWeight(1);
             } else {
-                img.stroke((lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[1], alph)));
+                img.stroke((lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[rdlrpal], alph)));
             }
         } else {
             if ((tp < 3) && strk >= 0.5) {
@@ -229,6 +228,12 @@ function makeTl() {
             case 9:
                 img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
                 img.circle(x + R.random_num(-a, a), y + R.random_num(-a, a), size);
+                break;
+            case 10:
+                img.noFill();
+                img.strokeWeight(5)
+                if (R.random_int(0, 1) == 0) { img.arc(x + R.random_num(-a, a), y + R.random_num(-a, a), size * 2, size, (3 * PI) / 2, 2 * PI); }
+                else { img.arc(x + R.random_num(-a, a), y + R.random_num(-a, a), size * 2, size, PI / 2, PI); }
                 break;
         }
     }
