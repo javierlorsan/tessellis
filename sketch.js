@@ -45,6 +45,8 @@ let palette;
 let COLS;
 let rndN, R;
 let tokenData = genTokenData(248);
+//tokenData.tokenId = 2003456;
+//tokenData.hash = '0x9ca74294e3c52ab7bd0eb33911413dc7a26ea95616af22a7b4409e5424fccbb7';
 let tkid = tokenData.tokenId;
 let seed = parseInt(tokenData.hash.slice(0, 16), 16)
 let hu = 1;
@@ -156,7 +158,7 @@ function makeTl() {
     const noiseScale = 9e-11;
     const n = R.random_int(5, 20);
     const alph = R.random_int(55, 255);
-    const tp = R.random_int(0, 7);
+    const tp = R.random_int(0, 9);
     const strk = R.random_dec();
     const rdln1 = R.random_int(0, 7);
     const rdpoly = R.random_int(5, 6);
@@ -205,20 +207,28 @@ function makeTl() {
                 poly(x, y, size, rdpoly)
                 break;
             case 3:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a), y + R.random_num(-a, a) + size)
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a), y + R.random_num(-a, a) + size);
                 break;
             case 4:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a))
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a));
                 break;
             case 5:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size)
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
                 break;
             case 6:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size)
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size);
                 break;
             case 7:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size)
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size)
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size);
+                break;
+            case 8:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) - size, y + R.random_num(-a, a) - size);
+                img.rect(x + R.random_num(-a, a), y + R.random_num(-a, a), size, size);
+                break;
+            case 9:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
+                img.circle(x + R.random_num(-a, a), y + R.random_num(-a, a), size);
                 break;
         }
     }
