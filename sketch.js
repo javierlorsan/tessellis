@@ -31,7 +31,7 @@ let colors30 = ["#EEA010", "#DF4E0A", "#B21704", "#537C0B", "#F4E5C7", "#F1C55D"
 let colors31 = ["#10AC4B", "#E2BCB1", "#53A408", "#B2C12B", "#EBDEA3", "#20C282", "#222124", "#C58C2D", "#274FAA", "#0B682D"];
 let colors32 = ["#222124", "#E7C02C", "#20C282", "#EBDEA3", "#4C3033", "#B2C12B", "#E2B07F", "#0B682D", "#54A243", "#274FAA"];
 let colors33 = ["#A6B996", "#4C3033", "#E7C02C", "#0B682D", "#20C282", "#506431", "#F6F4F2", "#8F7791", "#B2C12B", "#EBDEA3"];
-let paleta = [colors1, colors2, colors3, colors4, colors5, colors6, colors7, colors8, colors9, colors10, colors11, colors12, colors13, colors14, colors15, colors16, colors17, colors18, colors19, colors20, colors21, colors22, colors23, colors24, colors25, colors26, colors27, colors28, colors29, colors30, colors31, colors32, colors33];
+let paleta = [colors1, colors2, colors3, colors4, colors5, colors6, colors7, colors8, colors9, colors10, colors11, colors12, colors13, colors14, colors15, colors16, colors17, colors18, colors19, colors20, colors21, colors22, colors23, colors24, colors25, colors26, colors27, colors28, colors29, colors30, colors31 ,colors32, colors33];
 let colores = [["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"],["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"], ["#FA053F", "#FEB200", "#03FDBC", "#04BEFB", "#06617F"], ["#ef476f", "#ffd166", "#06d6a0", "#118ab2", "#073b4c"], ["#007f5f", "#2b9348", "#55a630", "#80b918", "#aacc00", "#bfd200", "#d4d700", "#dddf00", "#eeef20", "#ffff3f"], ["#54478c", "#2c699a", "#048ba8", "#0db39e", "#16db93", "#83e377", "#b9e769", "#efea5a", "#f1c453", "#f29e4c"].reverse()];
 let lncolors1 = ["#fefae0", "#edf6f9", "#e9f5db"];
 let lncolors2 = ["#1b4332", "#003459", "#5e503f"];
@@ -77,18 +77,16 @@ function setup() {
 
     //cline = color(R.random_choice(paleta)[R.random_int(0, 9)]);
     
-    if (tkid % 2 == 0) {
+    /*if (tkid % 2 == 0) {
         COLS = paleta[R.random_int(0, paleta.length - 1)];
         arridx = R.random_int(0, 2);
-    } else {
+    } else {*/
         let colArr = [];
-        let rdt = R.random_int(2, 10);
-        for (t = 0; t < rdt; t++) {
+        for (t = 0; t < 10; t++) {
             colArr.push(R.random_choice(paleta)[R.random_int(0, 9)]);
         }
         COLS = colArr
-        console.log(colArr.length);
-    }
+    //}
     palette = COLS;
 
     cline1 = color(R.random_choice(lncolors1))
@@ -104,7 +102,6 @@ function setup() {
     }
 
     clusters = divide(points);
-    console.log(clusters[0].length + ' - ' + clusters[1].length);
     hulls = [convexHull(clusters[0]), convexHull(clusters[1])];
     let s = 40;
     if (rndS == 0) { s = 50; } else if (rndS == 1) { s = 60; }
@@ -155,11 +152,11 @@ function makeTl() {
     const minSize = R.random_int(1,5);
     const maxSize = minSize + 5;
     const noiseScale = 9e-11;
-    const n = R.random_int(5, 20);
+    const n = R.random_int(5, 50);
     const alph = R.random_int(75, 255);
-    const tp = R.random_int(0, 10);
+    const tp =R.random_int(0, 10);
     const strk = R.random_dec();
-    const rdln1 = R.random_int(0, 7);
+    const rdln1 = R.random_int(0, 10);
     const rdpoly = R.random_int(5, 6);
     const rdlrpal = R.random_int(0, colores.length-1)
 
@@ -195,6 +192,7 @@ function makeTl() {
             }
         }
         const a = 0;
+
         switch (tp) {
             case 0:
                 img.circle(x + R.random_num(-a, a), y + R.random_num(-a, a), size);
@@ -391,10 +389,6 @@ function addArc(x, y, d, theta1, theta2) {
 
 function writeArcs() {
 
-    //img.blendMode(MULTIPLY);
-    //img.blendMode(OVERLAY)
-    //let x = 1;
-    //let t = 1;
     img.strokeWeight(10);
     cline1.setAlpha(170);
     cline2.setAlpha(170);
