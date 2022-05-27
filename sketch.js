@@ -160,7 +160,7 @@ function makeTl() {
     const rdpoly = R.random_int(5, 6);
     const rdlrpal = R.random_int(0, colores.length-1)
     if ((tp < 2) && strk > 0.5) img.noStroke();
-    console.log(tp);
+    console.log(palette.toString());
     for (let i = 0; i < 10000; i++) {
         let size;
         if (i > 6000) {
@@ -187,11 +187,11 @@ function makeTl() {
             }
             else {
                 img.stroke((lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), palette, alph)))
-                if (rdln1 == 1 && tp > 2) img.strokeWeight(1);
+                if (rdln1 == 1 && (tp > 2 && tp != 9 && tp != 10)) img.strokeWeight(1);
             }
-        }
+       }
         const a = 0;
-
+       
         switch (tp) {
             case 0:
                 img.circle(x + R.random_num(-a, a), y + R.random_num(-a, a), size);
