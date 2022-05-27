@@ -154,14 +154,13 @@ function makeTl() {
     const noiseScale = 9e-11;
     const n = R.random_int(5, 50);
     const alph = R.random_int(75, 255);
-    const tp =R.random_int(0, 10);
+    const tp = R.random_int(0, 11);
     const strk = R.random_dec();
     const rdln1 = R.random_int(0, 10);
     const rdpoly = R.random_int(5, 6);
     const rdlrpal = R.random_int(0, colores.length-1)
-
     if ((tp < 2) && strk > 0.5) img.noStroke();
-
+    console.log(tp);
     for (let i = 0; i < 10000; i++) {
         let size;
         if (i > 6000) {
@@ -204,30 +203,33 @@ function makeTl() {
                 poly(x, y, size, rdpoly)
                 break;
             case 3:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a), y + R.random_num(-a, a) + size);
+                customShape(x, y, floor(R.random_num(0, 10e6)));
                 break;
             case 4:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a));
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a), y + R.random_num(-a, a) + size);
                 break;
             case 5:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a));
                 break;
             case 6:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size);
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
                 break;
             case 7:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
                 img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size);
                 break;
             case 8:
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
+                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size);
+                break;
+            case 9:
                 img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) - size, y + R.random_num(-a, a) - size);
                 img.rect(x + R.random_num(-a, a), y + R.random_num(-a, a), size, size);
                 break;
-            case 9:
+            case 10:
                 img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
                 img.circle(x + R.random_num(-a, a), y + R.random_num(-a, a), size);
                 break;
-            case 10:
+            case 11:
                 img.noFill();
                 img.strokeWeight(5)
                 if (R.random_int(0, 1) == 0) { img.arc(x + R.random_num(-a, a), y + R.random_num(-a, a), size * 2, size, (3 * PI) / 2, 2 * PI); }
@@ -245,6 +247,18 @@ function poly(x, y, radius, npoints) {
         let sx = x + cos(a) * radius;
         let sy = y + sin(a) * radius;
         vertex(sx, sy);
+    }
+    img.endShape(CLOSE);
+}
+
+function customShape(ox, oy, seed) {
+    img.beginShape();
+    for (let i = 0; i < 15; i++) {
+        tStep = lerp(-1, 1, noise(seed, i * 0.1));
+        t += tStep;
+        let x =  cos(t) + ox;
+        let y =  sin(t) + oy;
+        vertex(x, y);
     }
     img.endShape(CLOSE);
 }
