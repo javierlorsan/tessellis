@@ -75,18 +75,11 @@ function setup() {
     rddir = R.random_int(0, 2);
     pixelDensity(1);
 
-    //cline = color(R.random_choice(paleta)[R.random_int(0, 9)]);
-    
-    /*if (tkid % 2 == 0) {
-        COLS = paleta[R.random_int(0, paleta.length - 1)];
-        arridx = R.random_int(0, 2);
-    } else {*/
-        let colArr = [];
-        for (t = 0; t < 10; t++) {
-            colArr.push(R.random_choice(paleta)[R.random_int(0, 9)]);
-        }
-        COLS = colArr
-    //}
+    let colArr = [];
+    for (t = 0; t < 10; t++) {
+        colArr.push(R.random_choice(paleta)[R.random_int(0, 9)]);
+    }
+    COLS = colArr
     palette = COLS;
 
     cline1 = color(R.random_choice(lncolors1))
@@ -160,7 +153,7 @@ function makeTl() {
     const rdpoly = R.random_int(5, 6);
     const rdlrpal = R.random_int(0, colores.length-1)
     if ((tp < 2) && strk > 0.5) img.noStroke();
-    console.log(palette.toString());
+
     for (let i = 0; i < 10000; i++) {
         let size;
         if (i > 6000) {
@@ -409,9 +402,7 @@ function writeArcs() {
     img.noFill();
     let idCount = new Array(arcs.length).fill(0);
     for (let a of arcs) {
-        // img.arc(a.x, a.y, a.d, a.d, a.theta1, a.theta2);
         idCount[a.id]++;
-        //t++;
     }
 
     id = idCount.indexOf(max([...idCount]));
@@ -516,7 +507,6 @@ function convexHull(points) {
     let i = 0;
     let endPoint = 0;
     let pointOnHull = points[0];
-    //try {
         do {
             hull.push(pointOnHull);
             endPoint = points[0];
@@ -530,10 +520,6 @@ function convexHull(points) {
             i++;
             pointOnHull = endPoint;
         } while (typeof endPoint !== 'undefined' && !endPoint.equals(points[0]));
-    //} catch (err) {
-    //    alert(err.toString());
-        //window.location.reload();
-    //}
     return hull;
 }
 
