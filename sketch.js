@@ -83,8 +83,8 @@ function setup() {
     COLS = colArr
     palette = COLS;
 
-    if (tkid % 3 == 0) { bgcolor = '#000000'; bgstk = '#ffffff'; }
-    console.log(bgstk);
+    if (tkid % 2 == 0) { bgcolor = '#000000'; bgstk = '#ffffff'; }
+    
     cline1 = color(R.random_choice(lncolors1))
     cline2 = color(R.random_choice(lncolors2))
 
