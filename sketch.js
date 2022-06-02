@@ -63,6 +63,7 @@ let arcs = [];
 let cline1;
 let cline2;
 let bgcolor = '#ffffff', bgstk = '#A2A3A5';
+let tp, strk;
 
 function setup() {
     
@@ -82,6 +83,9 @@ function setup() {
     }
     COLS = colArr
     palette = COLS;
+
+    tp = R.random_int(0, 11);
+    strk = R.random_dec();
 
     if (tkid % 2 == 0) { bgcolor = '#000000'; bgstk = '#ffffff'; }
     
@@ -110,6 +114,28 @@ function setup() {
     makeTl();
     initarcos();
     writeArcs();
+    if (tp == 2 && strk >= 0.5) {
+    } else { if (R.random_dec() >= 0.5) filtro(R.random_int(0, 3)); }
+}
+
+function filtro(type) {
+
+    img.push()
+    switch (type) {
+        case 0:
+            img.filter(INVERT);
+            break;
+        case 1:
+            img.filter(DILATE);
+            break;
+        case 2:
+            img.filter(ERODE);
+            break;
+        case 3:
+            img.filter(INVERT);
+            break;
+    }
+    img.pop();
 }
 
 function initarcos() {
@@ -150,12 +176,14 @@ function makeTl() {
     const noiseScale = 9e-11;
     const n = R.random_int(5, 50);
     const alph = R.random_int(75, 255);
-    const tp = R.random_int(0, 11);
-    const strk = R.random_dec();
     const rdln1 = R.random_int(0, 10);
     const rdpoly = R.random_int(5, 6);
     const rdlrpal = R.random_int(0, colores.length-1)
     if ((tp < 2) && strk > 0.5) img.noStroke();
+
+    if (tp == 2 && strk >= 0.5) {
+        bgcolor = '#ffffff'; bgstk = '#A2A3A5';
+    }
 
     for (let i = 0; i < 10000; i++) {
         let size;
@@ -421,6 +449,8 @@ function writeArcs() {
     }
 
 }
+
+
 
 function keyPressed() {
     if (key == ' ') {
