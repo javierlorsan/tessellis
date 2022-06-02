@@ -62,6 +62,7 @@ let idCount = 0;
 let arcs = [];
 let cline1;
 let cline2;
+let bgcolor = '#ffffff', bgstk = '#A2A3A5';
 
 function setup() {
     
@@ -82,6 +83,8 @@ function setup() {
     COLS = colArr
     palette = COLS;
 
+    if (tkid % 3 == 0) { bgcolor = '#000000'; bgstk = '#ffffff'; }
+    console.log(bgstk);
     cline1 = color(R.random_choice(lncolors1))
     cline2 = color(R.random_choice(lncolors2))
 
@@ -258,8 +261,10 @@ function customShape(ox, oy, seed) {
 
 function draw() {   
 
-    background("#ffffff");
-    stroke("#A2A3A5");
+
+    background(bgcolor);
+    stroke(bgstk);
+
     for (let fp of fpoints) {
         strokeWeight(1);
         point(fp.x, fp.y);
