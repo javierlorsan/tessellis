@@ -103,7 +103,7 @@ function setup() {
 
     clusters = divide(points);
     hulls = [convexHull(clusters[0]), convexHull(clusters[1])];
-    let s = R.random_int(25, 90);
+    let s = R.random_int(35, 90);
     //if (rndS == 0) { s = 50; } else if (rndS == 1) { s = 60; }
     for (let x = s / 2; x < width - s / 2; x += s) {
         for (let y = s / 2; y < height - s / 2; y += s) {
