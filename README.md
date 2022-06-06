@@ -1,4 +1,4 @@
-# tessellis
+# Tessellis
 Generative Gaudi style mosaic
 
 <b>Instructions:</b>
