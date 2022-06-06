@@ -31,8 +31,8 @@ let colors30 = ["#EEA010", "#DF4E0A", "#B21704", "#537C0B", "#F4E5C7", "#F1C55D"
 let colors31 = ["#10AC4B", "#E2BCB1", "#53A408", "#B2C12B", "#EBDEA3", "#20C282", "#222124", "#C58C2D", "#274FAA", "#0B682D"];
 let colors32 = ["#222124", "#E7C02C", "#20C282", "#EBDEA3", "#4C3033", "#B2C12B", "#E2B07F", "#0B682D", "#54A243", "#274FAA"];
 let colors33 = ["#A6B996", "#4C3033", "#E7C02C", "#0B682D", "#20C282", "#506431", "#F6F4F2", "#8F7791", "#B2C12B", "#EBDEA3"];
-let paleta = [colors1, colors2, colors3, colors4, colors5, colors6, colors7, colors8, colors9, colors10, colors11, colors12, colors13, colors14, colors15, colors16, colors17, colors18, colors19, colors20, colors21, colors22, colors23, colors24, colors25, colors26, colors27, colors28, colors29, colors30, colors31 ,colors32, colors33];
-let colores = [["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"],["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"], ["#FA053F", "#FEB200", "#03FDBC", "#04BEFB", "#06617F"], ["#ef476f", "#ffd166", "#06d6a0", "#118ab2", "#073b4c"], ["#007f5f", "#2b9348", "#55a630", "#80b918", "#aacc00", "#bfd200", "#d4d700", "#dddf00", "#eeef20", "#ffff3f"], ["#54478c", "#2c699a", "#048ba8", "#0db39e", "#16db93", "#83e377", "#b9e769", "#efea5a", "#f1c453", "#f29e4c"].reverse()];
+let paleta = [colors1, colors2, colors3, colors4, colors5, colors6, colors7, colors8, colors9, colors10, colors11, colors12, colors13, colors14, colors15, colors16, colors17, colors18, colors19, colors20, colors21, colors22, colors23, colors24, colors25, colors26, colors27, colors28, colors29, colors30, colors31, colors32, colors33];
+let colores = [["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], ["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"], ["#FA053F", "#FEB200", "#03FDBC", "#04BEFB", "#06617F"], ["#ef476f", "#ffd166", "#06d6a0", "#118ab2", "#073b4c"], ["#007f5f", "#2b9348", "#55a630", "#80b918", "#aacc00", "#bfd200", "#d4d700", "#dddf00", "#eeef20", "#ffff3f"], ["#54478c", "#2c699a", "#048ba8", "#0db39e", "#16db93", "#83e377", "#b9e769", "#efea5a", "#f1c453", "#f29e4c"].reverse()];
 let lncolors1 = ["#fefae0", "#edf6f9", "#e9f5db"];
 let lncolors2 = ["#1b4332", "#003459", "#5e503f"];
 let clusters = [];
@@ -66,8 +66,8 @@ let bgcolor = '#ffffff', bgstk = '#A2A3A5';
 let tp, strk;
 
 function setup() {
-    
-	createCanvas(sz, sz);
+
+    createCanvas(sz, sz);
     R = new Random(seed)
     img = createGraphics(sz, sz);
     let rndS = R.random_int(0, 3);
@@ -88,7 +88,7 @@ function setup() {
     strk = R.random_dec();
 
     if (tkid % 2 == 0) { bgcolor = '#000000'; bgstk = '#ffffff'; }
-    
+
     cline1 = color(R.random_choice(lncolors1))
     cline2 = color(R.random_choice(lncolors2))
 
@@ -110,12 +110,12 @@ function setup() {
             createblocks(x, y);
         }
     }
-    
+
     makeTl();
+    if (tp == 2 && strk >= 0.5) {
+    } else { if (R.random_dec() > 0.5) filtro(R.random_int(0, 3)); }
     initarcos();
     writeArcs();
-    if (tp == 2 && strk >= 0.5) {
-    } else { if (R.random_dec() >= 0.5) filtro(R.random_int(0, 3)); }
 }
 
 function filtro(type) {
@@ -147,7 +147,7 @@ function initarcos() {
         }
     }
 
-    let y = margin, s=0;
+    let y = margin, s = 0;
     while (y < sz - margin) {
         s = R.random_choice(divPossibilities) * u;
         for (let x = margin; x < sz - margin - 0.1; x += s) {
@@ -155,7 +155,7 @@ function initarcos() {
         }
         y += s;
     }
-    
+
     for (let x = margin; x < sz - margin - u / 2; x += 2 * u) {
         addArc(x + u, margin, u, PI, PI * 2);
         addArc(x + u, sz - margin, u, 0, PI);
@@ -171,14 +171,14 @@ function makeTl() {
 
     img.noiseSeed(floor(R.random_num(0, 10e6)));
 
-    const minSize = R.random_int(1,5);
+    const minSize = R.random_int(1, 5);
     const maxSize = minSize + 5;
     const noiseScale = 9e-11;
     const n = R.random_int(5, 50);
     const alph = R.random_int(75, 255);
     const rdln1 = R.random_int(0, 10);
     const rdpoly = R.random_int(5, 6);
-    const rdlrpal = R.random_int(0, colores.length-1)
+    const rdlrpal = R.random_int(0, colores.length - 1)
     if ((tp < 2) && strk > 0.5) img.noStroke();
 
     if (tp == 2 && strk >= 0.5) {
@@ -213,9 +213,8 @@ function makeTl() {
                 img.stroke((lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), palette, alph)))
                 if (rdln1 == 1 && (tp > 2 && tp != 9 && tp != 10)) img.strokeWeight(1);
             }
-       }
+        }
         const a = 0;
-       
         switch (tp) {
             case 0:
                 img.circle(x + R.random_num(-a, a), y + R.random_num(-a, a), size);
@@ -255,8 +254,8 @@ function makeTl() {
                 break;
             case 11:
                 img.noFill();
-                img.strokeWeight(5)
-                if (R.random_int(0, 1) == 0) { img.arc(x + R.random_num(-a, a), y + R.random_num(-a, a), size * 2, size, (3 * PI) / 2, 2 * PI); }
+                img.strokeWeight(R.random_int(5,10))
+                if (R.random_int(0, 1) == 0) { img.arc(x + R.random_num(-a, a), y + R.random_num(-a, a), size * 10, size * 2, (3 * PI) / 2, 2 * PI); }
                 else { img.arc(x + R.random_num(-a, a), y + R.random_num(-a, a), size * 2, size, PI / 2, PI); }
                 break;
         }
@@ -280,14 +279,14 @@ function customShape(ox, oy, seed) {
     for (let i = 0; i < 15; i++) {
         tStep = lerp(-1, 1, noise(seed, i * 0.1));
         t += tStep;
-        let x =  cos(t) + ox;
-        let y =  sin(t) + oy;
+        let x = cos(t) + ox;
+        let y = sin(t) + oy;
         vertex(x, y);
     }
     img.endShape(CLOSE);
 }
 
-function draw() {   
+function draw() {
 
 
     background(bgcolor);
@@ -301,7 +300,7 @@ function draw() {
     let rdhl = 0
 
     mk.clear();
-    
+
     for (let th = 0; th < hulls.length; th++) {
         if (hulls[th].length > 3) {
             mk.beginShape();
@@ -330,7 +329,7 @@ function draw() {
                 }
             }
             mk.endShape(CLOSE);
-            if (th == hu) { hu++;  }
+            if (th == hu) { hu++; }
         }
     }
     if (frameCount > 5) strmove = true;
@@ -439,7 +438,7 @@ function writeArcs() {
     }
 
     id = idCount.indexOf(max([...idCount]));
-    
+
     for (let a of arcs) {
         if (a.id == id) {
             const [r, g, b] = img.get(a.x, a.y);
@@ -454,7 +453,7 @@ function writeArcs() {
 
 function keyPressed() {
     if (key == ' ') {
-        stopmov=true;
+        stopmov = true;
     }
     if (key == 'c') {
         stopmov = false;
@@ -542,19 +541,19 @@ function convexHull(points) {
     let i = 0;
     let endPoint = 0;
     let pointOnHull = points[0];
-        do {
-            hull.push(pointOnHull);
-            endPoint = points[0];
-            for (let j = 0; j < points.length; j++) {
-                let p = p5.Vector.sub(endPoint, pointOnHull);
-                let q = p5.Vector.sub(points[j], pointOnHull);
-                if (endPoint.equals(pointOnHull) || (p.cross(q)).z < 0) {
-                    endPoint = points[j];
-                }
+    do {
+        hull.push(pointOnHull);
+        endPoint = points[0];
+        for (let j = 0; j < points.length; j++) {
+            let p = p5.Vector.sub(endPoint, pointOnHull);
+            let q = p5.Vector.sub(points[j], pointOnHull);
+            if (endPoint.equals(pointOnHull) || (p.cross(q)).z < 0) {
+                endPoint = points[j];
             }
-            i++;
-            pointOnHull = endPoint;
-        } while (typeof endPoint !== 'undefined' && !endPoint.equals(points[0]));
+        }
+        i++;
+        pointOnHull = endPoint;
+    } while (typeof endPoint !== 'undefined' && !endPoint.equals(points[0]));
     return hull;
 }
 
