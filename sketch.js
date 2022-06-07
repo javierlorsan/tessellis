@@ -51,8 +51,8 @@ let tkid = tokenData.tokenId;
 let seed = parseInt(tokenData.hash.slice(0, 16), 16)
 let hu = 1;
 let fpoints = [];
-let strmove = false;
-let stopmov = false;
+let strmove = true;
+let stopmov = true;
 let mk;
 let rdhow = sz;
 let rddir;
@@ -332,7 +332,7 @@ function draw() {
             if (th == hu) { hu++; }
         }
     }
-    if (frameCount > 5) strmove = true;
+    //if (frameCount > 5) strmove = true;
 
     imgClone = img.get();
     imgClone.mask(mk.get());
