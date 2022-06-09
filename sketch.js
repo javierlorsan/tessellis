@@ -42,7 +42,6 @@ let WIDTH = window.innerWidth;
 let HEIGHT = window.innerHeight;
 let sz = Math.min(WIDTH, HEIGHT);
 let palette;
-let COLS;
 let rndN, R;
 let tokenData = genTokenData(248);
 //tokenData.tokenId = 2003456;
@@ -70,7 +69,7 @@ function setup() {
     createCanvas(sz, sz);
     R = new Random(seed)
     img = createGraphics(sz, sz);
-    let rndS = R.random_int(0, 3);
+    //let rndS = R.random_int(0, 3);
     let size = sz;
     rndN = R.random_int(2, 4);
     mk = createGraphics(sz, sz);
@@ -81,9 +80,7 @@ function setup() {
     for (t = 0; t < 10; t++) {
         colArr.push(R.random_choice(paleta)[R.random_int(0, 9)]);
     }
-    COLS = colArr
-    palette = COLS;
-    console.log(COLS.toString());
+    palette = colArr;
 
     tp = R.random_int(0, 11);
     strk = R.random_dec();
