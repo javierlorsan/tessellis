@@ -114,7 +114,7 @@ function setup() {
 
     makeTl();
     if (tp == 2 && strk >= 0.5) {
-    } else { if (R.random_dec() > 0.5) filtro(R.random_int(0, 3)); }
+    } else { if (R.random_dec() > 0.6) filtro(R.random_int(0, 3)); }
     initarcos();
     writeArcs();
 }
