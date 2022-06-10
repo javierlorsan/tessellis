@@ -111,7 +111,7 @@ function setup() {
 
     makeTl();
     if (tp == 2 && strk >= 0.5) {
-    } else { if (R.random_dec() > 0.7) filtro(R.random_int(0, 3)); }
+    } else { if (R.random_dec() > 0.7) filtro(R.random_int(0, 2)); }
     initarcos();
     writeArcs();
 }
@@ -128,9 +128,6 @@ function filtro(type) {
             break;
         case 2:
             img.filter(ERODE);
-            break;
-        case 3:
-            img.filter(INVERT);
             break;
     }
     img.pop();
