@@ -1,3 +1,20 @@
+class Random {
+    constructor(e) {
+        this.seed = e
+    }
+    random_dec() {
+        return this.seed ^= this.seed << 13, this.seed ^= this.seed >> 17, this.seed ^= this.seed << 5, (this.seed < 0 ? 1 + ~this.seed : this.seed) % 1e3 / 1e3
+    }
+    random_num(e, r) {
+        return e + (r - e) * this.random_dec()
+    }
+    random_int(e, r) {
+        return Math.floor(this.random_num(e, r + 1))
+    }
+    random_choice(e) {
+        return e[Math.floor(this.random_num(0, .99 * e.length))]
+    }
+}
 let colors1 = ["#03045e", "#023e8a", "#0077b6", "#0096c7", "#00b4d8", "#48cae4", "#90e0ef", "#ade8f4", "#caf0f8", "#D9F1F6"];
 let colors2 = ["#03071e", "#370617", "#6a040f", "#9d0208", "#d00000", "#dc2f02", "#e85d04", "#f48c06", "#faa307", "#F5B034"];
 let colors3 = ["#ffba08", "#f8f9fa", "#e9ecef", "#dee2e6", "#ced4da", "#adb5bd", "#6c757d", "#495057", "#343a40", "#212529"];
@@ -41,13 +58,10 @@ let img;
 let WIDTH = window.innerWidth;
 let HEIGHT = window.innerHeight;
 let sz = Math.min(WIDTH, HEIGHT);
-let palette;
-let rndN, R;
-let tokenData = genTokenData(248);
-//tokenData.tokenId = 2003456;
-//tokenData.hash = '0x9ca74294e3c52ab7bd0eb33911413dc7a26ea95616af22a7b4409e5424fccbb7';
-let tkid = tokenData.tokenId;
-let seed = parseInt(tokenData.hash.slice(0, 16), 16)
+let palette, palette2;
+let rndN;
+let tokenHash = fxhash;
+let seed = Math.abs(hashes[0]);
 let hu = 1;
 let fpoints = [];
 let strmove = true;
@@ -62,30 +76,36 @@ let arcs = [];
 let cline1;
 let cline2;
 let bgcolor = '#ffffff', bgstk = '#A2A3A5';
-let tp, strk;
+let R = new Random(seed);
+let tkid = R.random_int(0, 999);
+let tp = 3; //R.random_int(0, 11);
+let sb = R.random_int(30, 50);
+let strk = R.random_dec();
+let _palette, _painting;
+let mk2;
+
+if (tkid % 2 == 0) { bgcolor = '#000000'; bgstk = '#ffffff'; }
+if (tp == 2 && strk >= 0.5) {bgcolor = '#ffffff'; bgstk = '#A2A3A5';}
 
 function setup() {
 
     createCanvas(sz, sz);
-    R = new Random(seed)
     img = createGraphics(sz, sz);
-    //let rndS = R.random_int(0, 3);
     let size = sz;
     rndN = R.random_int(2, 4);
     mk = createGraphics(sz, sz);
+    mk2 = createGraphics(sz, sz);
     rddir = R.random_int(0, 2);
     pixelDensity(1);
+    centerCanvas();
+
+    mk2.background("#000000");
 
     let colArr = [];
     for (t = 0; t < 10; t++) {
         colArr.push(R.random_choice(paleta)[R.random_int(0, 9)]);
     }
     palette = colArr;
-
-    tp = R.random_int(0, 11);
-    strk = R.random_dec();
-
-    if (tkid % 2 == 0) { bgcolor = '#000000'; bgstk = '#ffffff'; }
 
     cline1 = color(R.random_choice(lncolors1))
     cline2 = color(R.random_choice(lncolors2))
@@ -95,25 +115,29 @@ function setup() {
     }
 
     let points = [];
-    for (let i = 0; i < 5000; i++) {
+    for (let i = 0; i < 9000; i++) {
         points.push(createVector(width / 2 + R.random_num(-size / 2, size / 2), height / 2 + R.random_num(-size / 2, size / 2)));
     }
 
     clusters = divide(points);
     hulls = [convexHull(clusters[0]), convexHull(clusters[1])];
-    let s = R.random_int(40, 90);
-    //if (rndS == 0) { s = 50; } else if (rndS == 1) { s = 60; }
-    for (let x = s / 2; x < width - s / 2; x += s) {
-        for (let y = s / 2; y < height - s / 2; y += s) {
+    for (let x = sb / 2; x < width - sb / 2; x += sb) {
+        for (let y = sb / 2; y < height - sb / 2; y += sb) {
             createblocks(x, y);
         }
     }
-
+    //initarcos();
     makeTl();
-    if (tp == 2 && strk >= 0.5) {
-    } else { if (R.random_dec() > 0.7) filtro(R.random_int(0, 2)); }
-    initarcos();
-    writeArcs();
+    //if (tp == 2 && strk >= 0.5) {
+    //} else { if (R.random_dec() > 0.7) filtro(R.random_int(0, 2)); }
+    
+    //writeArcs();
+    //createlines();
+}
+
+function centerCanvas() {
+    var e = document.body.style;
+    e.display = "flex", e.height = "100vh", e.alignItems = "center", e.justifyContent = "center"
 }
 
 function filtro(type) {
@@ -165,35 +189,65 @@ function initarcos() {
 function makeTl() {
 
     img.noiseSeed(floor(R.random_num(0, 10e6)));
-
-    const minSize = R.random_int(1, 5);
-    const maxSize = minSize + 5;
+    const minSize = 29; //R.random_int(1, 5);
+    const maxSize = 59; //minSize + 5;
     const noiseScale = 9e-11;
-    const n = R.random_int(5, 50);
+    let n = R.random_int(5, 50);
     const alph = R.random_int(75, 255);
     const rdln1 = R.random_int(0, 10);
     const rdpoly = R.random_int(5, 6);
     const rdlrpal = R.random_int(0, colores.length - 1)
+    let rseed = floor(R.random_num(0, 10e6));
+    let rdcurv = R.random_int(0, 1);
+    let x, y;
+
+    let mR = R.random_int(15, 25)
+    let maxR = sz / 2 - sz / mR
+    
     if ((tp < 2) && strk > 0.5) img.noStroke();
-
-    if (tp == 2 && strk >= 0.5) {
-        bgcolor = '#ffffff'; bgstk = '#A2A3A5';
-    }
-
+    let radius = sz * 0.00;
+    img.translate(width / 2, height / 2);
+    let t = 0;
+    let rd1 = random(0, 75);
+    let rd2 = random(0, 55);
+    //img.rotate(PI / 3);
     for (let i = 0; i < 10000; i++) {
         let size;
         if (i > 6000) {
             size = R.random_num(minSize, maxSize);
+            //size = Math.abs(map((i / 6000) ** 0.8, 0, 1, 200, minSize));
         } else {
             size = map((i / 6000) ** 0.8, 0, 1, 200, minSize);
         }
 
-        let x = R.random_num(0, sz);
-        let y = R.random_num(0, sz);
+        let d = random(radius / 3, radius / R.random_int(1,8));
+        x = rd1 * random(-d, d) / t;
+        y = rd2 * random(-d, d) / t;
+
+        /*if (i < 10000) {
+            //circulo centrado
+            x = R.random_num(sz / 2, maxR);
+            y = R.random_num(sz / 2, maxR);
+        } else {
+            //barra vertical
+            x = R.random_num(sz / 2, maxR);
+            y = R.random_num(0, sz);
+        }
+
+        if (i < 10000) {
+            //circulo centrado
+            //x = R.random_num(sz / 2, maxR);
+            //y = R.random_num(sz / 2, maxR);
+        } else {
+            //barra horizontal
+            x = R.random_num(0, sz);
+            y = R.random_num(sz / 2, maxR);
+        }*/
+       
 
         img.strokeWeight(size);
 
-        if (floor(x / width * n * 2) % 2 == 0) {
+       if (floor(x / sz * n ) % 2 == 0) {
             if ((tp < 3) && strk > 0.5) {
                 img.fill(lerpColorScheme(curlNoise(x * noiseScale, (y + 0) * noiseScale, 0), colores[rdlrpal], alph));
                 if (tp == 2) img.strokeWeight(1);
@@ -209,51 +263,62 @@ function makeTl() {
                 if (rdln1 == 1 && (tp > 2 && tp != 9 && tp != 10)) img.strokeWeight(1);
             }
         }
-        const a = 0;
-        switch (tp) {
-            case 0:
-                img.circle(x + R.random_num(-a, a), y + R.random_num(-a, a), size);
-                break;
-            case 1:
-                img.rect(x + R.random_num(-a, a), y + R.random_num(-a, a), size, size);
-                break;
-            case 2:
-                poly(x, y, size, rdpoly)
-                break;
-            case 3:
-                customShape(x, y, floor(R.random_num(0, 10e6)));
-                break;
-            case 4:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a), y + R.random_num(-a, a) + size);
-                break;
-            case 5:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a));
-                break;
-            case 6:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
-                break;
-            case 7:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size);
-                break;
-            case 8:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) - size);
-                break;
-            case 9:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) - size, y + R.random_num(-a, a) - size);
-                img.rect(x + R.random_num(-a, a), y + R.random_num(-a, a), size, size);
-                break;
-            case 10:
-                img.line(x + R.random_num(-a, a), y + R.random_num(-a, a), x + R.random_num(-a, a) + size, y + R.random_num(-a, a) + size);
-                img.circle(x + R.random_num(-a, a), y + R.random_num(-a, a), size);
-                break;
-            case 11:
-                img.noFill();
-                img.strokeWeight(R.random_int(5,10))
-                if (R.random_int(0, 1) == 0) { img.arc(x + R.random_num(-a, a), y + R.random_num(-a, a), size * 10, size * 2, (3 * PI) / 2, 2 * PI); }
-                else { img.arc(x + R.random_num(-a, a), y + R.random_num(-a, a), size * 2, size, PI / 2, PI); }
-                break;
+
+        drawimage(x, y, size, rdpoly, rseed, rdcurv);
+
+        t += random(0.1, 0.5);
+        if (radius < sz * 1) {
+            radius += random(1, 3);
         }
+    }
+
+}
+
+function drawimage(x, y, size, rdpoly, rdcshape, rdupdw) {
+
+    switch (tp) {
+        case 0:
+            img.circle(x, y, size);
+            break;
+        case 1:
+            img.rect(x, y, size, size);
+            break;
+        case 2:
+            poly(x, y, size, rdpoly)
+            break;
+        case 3:
+            customShape(x, y, rdcshape);
+            break;
+        case 4:
+            img.line(x, y, x, y + size);
+            break;
+        case 5:
+            img.line(x, y, x + size, y);
+            break;
+        case 6:
+            img.line(x, y, x + size, y + size);
+            break;
+        case 7:
+            img.line(x, y, x + size, y - size);
+            break;
+        case 8:
+            img.line(x, y, x + size, y + size);
+            img.line(x, y, x + size, y - size);
+            break;
+        case 9:
+            img.line(x, y, x - size, y - size);
+            img.rect(x, y, size, size);
+            break;
+        case 10:
+            img.line(x, y, x + size, y + size);
+            img.circle(x, y, size);
+            break;
+        case 11:
+            img.noFill();
+            img.strokeWeight(5)
+            if (rdupdw == 0) { img.arc(x, y, size * 2, size, (3 * PI) / 2, 2 * PI); }
+            else { img.arc(x, y, size * 2, size, PI / 2, PI); }
+            break;
     }
 
 }
@@ -297,17 +362,17 @@ function draw() {
     mk.clear();
 
     for (let th = 0; th < hulls.length; th++) {
-        if (hulls[th].length > 3) {
+        if (hulls[th].length > 2) {
             mk.beginShape();
             for (let p of hulls[th]) {
                 if (strmove && !stopmov) {
                     frameRate(60);
-                    if (frameCount % 2 == 0) rdhow = sz - frameCount;
-                    if (p.x > rdhow) {
+                    //if (frameCount % 2 == 0) rdhow = sz - frameCount;
+                    //if (p.x > rdhow) {
                         rdhl = getNoiseVal(p.x, p.y, lerp(p.x, p.y, 0.5));
-                    } else {
-                        rdhl = 0;
-                    }
+                    //} else {
+                    //    rdhl = 0;
+                    //}
                     switch (rddir) {
                         case 0:
                             vertex(p.x + rdhl, p.y + rdhl);
@@ -327,11 +392,9 @@ function draw() {
             if (th == hu) { hu++; }
         }
     }
-    //if (frameCount > 5) strmove = true;
 
     imgClone = img.get();
     imgClone.mask(mk.get());
-
     image(imgClone, 0, 0);
 }
 
@@ -442,6 +505,13 @@ function writeArcs() {
         }
     }
 
+}
+
+function createlines() {
+    img.strokeWeight(15);
+    img.stroke("#ffffff");
+    img.line(width / 2, 0, width / 2, height);
+    img.line(0, height/2, width, height/2);
 }
 
 
@@ -556,32 +626,89 @@ function distSquared(p, q) {
     return sq(p.x - q.x) + sq(p.y - q.y);
 }
 
-class Random {
-    constructor(e) {
-        this.seed = e
-    }
-    random_dec() {
-        return this.seed ^= this.seed << 13, this.seed ^= this.seed >> 17, this.seed ^= this.seed << 5, (this.seed < 0 ? 1 + ~this.seed : this.seed) % 1e3 / 1e3
-    }
-    random_num(e, r) {
-        return e + (r - e) * this.random_dec()
-    }
-    random_int(e, r) {
-        return Math.floor(this.random_num(e, r + 1))
-    }
-    random_choice(e) {
-        return e[Math.floor(this.random_num(0, .99 * e.length))]
-    }
+let rpal = R.random_int(0, 9);
+
+switch (rpal) {
+    case 0:
+        _palette = 'Pedrera';
+        break;
+    case 1:
+        _palette = 'Guel';
+        break;
+    case 2:
+        _palette = 'Batllo';
+        break;
+    case 3:
+        _palette = 'Vicens';
+        break;
+    case 4:
+        _palette = 'Cripta';
+        break;
+    case 5:
+        _palette = 'capricho';
+        break;
+    default:
+        _palette = 'random';
+        break;
 }
 
+switch (tp) {
+    case 0:
+        _painting = 'Circles';
+        break;
+    case 1:
+        _painting = 'Rects';
+        break;
+    case 2:
+        _painting = 'Polygon';
+        break;
+    case 3:
+        _painting = 'Customshape';
+        break;
+    case 4:
+        _painting = 'lines';
+        break;
+    case 5:
+        _painting = 'lines';
+        break;
+    case 6:
+        _painting = 'lines';
+        break;
+    case 7:
+        _painting = 'lines';
+        break;
+    case 8:
+        _painting = 'lines';
+        break;
+    case 9:
+        _painting = 'lines & rects';
+        break;
+    case 10:
+        _painting = 'lines & circles';
+        break;
+    case 11:
+        _painting = 'Arcs';
+        break;
+}
 
-function genTokenData(projectNum) {
-    let data = {};
-    let hash = "0x";
-    for (var i = 0; i < 64; i++) {
-        hash += Math.floor(Math.random() * 16).toString(16);
-    }
-    data.hash = hash;
-    data.tokenId = (projectNum * 1000000 + Math.floor(Math.random() * 1000)).toString();
-    return data;
+function getRar() {
+
+    let rdrar = R.random_dec();
+    if (rdrar < 0.5) return "low"
+    if (rdrar < 0.9) return "medium"
+    else return "high"
+
+}
+
+function getbgcolor() {
+    if (bgcolor == '#ffffff') return 'light'
+    else return 'dark'
+}
+
+window.$fxhashFeatures = {
+    "blocks": sb,
+    "palette": _palette,
+    "painting": _painting,
+    "background": getbgcolor(),
+    "super": getRar()
 }
